@@ -57,6 +57,20 @@
         </div>
       </div>
 
+      <div class="pest-spray-slot">
+        <button class="pest-spray" id="pest-spray" type="button" aria-label="Средство от вредителей" title="Доступно только во время нападения вредителей" disabled>
+          <svg viewBox="0 0 36 36" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+            <path d="M15 8H26L29 12H19Z" fill="#d7e8b5" stroke="#0a1d08" stroke-width="1.4" stroke-linejoin="round"/>
+            <path d="M24 8V5H30" stroke="#0a1d08" stroke-width="1.5" stroke-linecap="round"/>
+            <path d="M30 5H33" stroke="#0a1d08" stroke-width="1.5" stroke-linecap="round"/>
+            <path d="M13 13H27L29 30H11Z" fill="#d7e8b5" stroke="#0a1d08" stroke-width="1.5" stroke-linejoin="round"/>
+            <path d="M14 21H27" stroke="#5d803e" stroke-width="1.4" opacity=".7"/>
+            <path d="M7 5L5 4M8 8H5M9 11L6 13" stroke="#76a65a" stroke-width="1.5" stroke-linecap="round"/>
+          </svg>
+          <span class="pest-spray-count" id="pest-spray-count">0</span>
+        </button>
+      </div>
+
       <span class="currency-pill currency-pill--gems" aria-label="Гемы">
         <svg width="14" height="14" viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
           <path d="M2 5.2L4.2 1.5H9.8L12 5.2L7 12.5L2 5.2Z" fill="#3b82c4" opacity="0.85"/>
@@ -871,10 +885,33 @@
         <span id="weather-details-next">До смены погоды: 00:00</span>
       </div>
       </div>
+      <details class="garden-test-menu" id="garden-test-menu">
+        <summary>Тесты</summary>
+        <div class="garden-test-menu-popover">
+          <button id="test-crow-event" type="button">Ворона</button>
+          <button id="test-pest-event" type="button">Вредители</button>
+        </div>
+      </details>
     </div>
   </div>
 
   <div class="weather-toast" id="weather-toast" role="status" aria-live="polite"></div>
+
+  <div class="pest-status-banner" id="pest-status-banner" hidden role="status" aria-live="polite">
+    <span class="pest-status-icon" aria-hidden="true">!</span>
+    <span><strong>Нашествие вредителей</strong><small id="pest-status-copy">Обработай все растения средством из магазина</small></span>
+    <span class="pest-status-progress" id="pest-status-progress">0 / 0</span>
+  </div>
+
+  <div class="pest-alert" id="pest-alert" hidden>
+    <div class="pest-alert-card" role="alertdialog" aria-modal="true" aria-labelledby="pest-alert-title">
+      <span class="pest-alert-kicker">Срочное событие</span>
+      <div class="pest-alert-symbol" aria-hidden="true">🐛</div>
+      <h2 id="pest-alert-title">Сад атакуют вредители</h2>
+      <p id="pest-alert-copy">Гусеницы появились на растениях. Возьми средство в верхней панели и обработай каждое растение.</p>
+      <button class="btn btn-filled" id="pest-alert-close" type="button">Защитить сад</button>
+    </div>
+  </div>
 
   <div class="weather-intro" id="weather-intro" hidden>
     <div class="weather-intro-card" role="dialog" aria-modal="true" aria-labelledby="weather-intro-title">
@@ -930,9 +967,16 @@
 
   <!-- Tab panels -->
   <div class="shop-tab-panel active" id="shop-panel-deals" role="tabpanel">
-    <div class="shop-empty-state">
-      <span class="shop-empty-icon">🏷️</span>
-      <p>Здесь появятся акции</p>
+    <div class="shop-seeds-grid">
+      <div class="shop-seed-card shop-seed-card--treatment" data-item-id="pest_treatment" data-shop-kind="pest-treatment" data-price-coins="50">
+        <div class="shop-seed-icon shop-treatment-icon" aria-hidden="true">✦</div>
+        <span class="shop-seed-name">Средство от вредителей</span>
+        <span class="shop-seed-level">В запасе: 0</span>
+        <span class="shop-seed-reward">Одна упаковка защищает весь сад</span>
+        <span class="shop-seed-price">🪙 50 монет</span>
+        <button class="shop-buy-btn" data-action="buy">Купить</button>
+        <span class="shop-insufficient">Недостаточно средств</span>
+      </div>
     </div>
   </div>
 
@@ -1067,6 +1111,6 @@
   </div>
 </section>
 
-  <script src="app.js?v=layout-fix-7" defer></script>
+  <script src="app.js?v=garden-events-1" defer></script>
 </body>
 </html>

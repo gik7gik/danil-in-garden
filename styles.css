@@ -321,6 +321,47 @@
     }
     .watering-can svg { width: 100%; height: 100%; pointer-events: none; }
 
+    .pest-spray-slot {
+      width: 40.8px;
+      height: 40.8px;
+      flex: 0 0 40.8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .pest-spray {
+      position: relative;
+      width: 40.8px;
+      height: 40.8px;
+      padding: 2px;
+      border: 0;
+      background: transparent;
+      color: inherit;
+      cursor: grab;
+      user-select: none;
+      touch-action: none;
+      transition: opacity .18s ease, transform .18s ease;
+    }
+    .pest-spray svg { width: 100%; height: 100%; pointer-events: none; }
+    .pest-spray:not(:disabled):hover { transform: translateY(-1px); }
+    .pest-spray.dragging { cursor: grabbing; transform: rotate(-10deg) scale(1.08); }
+    .pest-spray:disabled { opacity: .28; cursor: not-allowed; }
+    .pest-spray-count {
+      position: absolute;
+      right: -2px;
+      bottom: -1px;
+      display: grid;
+      place-items: center;
+      min-width: 17px;
+      height: 17px;
+      padding: 0 4px;
+      border: 1px solid #fbfdf6;
+      border-radius: 99px;
+      background: #4a3212;
+      color: #fff;
+      font: 700 9px/1 'JetBrains Mono', monospace;
+    }
+
     @media (max-width: 768px) {
       .nav-extras { display: none; }
       .nav-home-btn { width: 48px; height: 48px; }
@@ -1323,10 +1364,28 @@
   width: 180px;
   position: relative;
 }
+.shop-seed-card[hidden] { display: none !important; }
 
 .shop-seed-card--premium {
   border-color: rgba(121, 63, 103, 0.42);
   box-shadow: inset 0 0 0 1px rgba(121, 63, 103, 0.08);
+}
+
+.shop-seed-card--treatment {
+  border-color: rgba(142, 82, 34, .38);
+  background: linear-gradient(160deg, #fbf7e9, #f0ead3);
+}
+.shop-treatment-icon {
+  display: grid;
+  place-items: center;
+  width: 72px;
+  height: 72px;
+  border: 2px solid #183313;
+  border-radius: 16px 16px 20px 20px;
+  background: #d7e8b5;
+  color: #5d803e;
+  font-size: 34px;
+  box-shadow: inset 0 10px 0 rgba(255,255,255,.34);
 }
 
 .shop-seed-icon {
@@ -1579,6 +1638,23 @@
    ready-to-water state reads at a glance even without the timer text. */
 .garden-pot-card.ready-to-water {
   box-shadow: 0 0 0 2px var(--color-moss-veil), 0 0 18px rgba(190, 210, 140, 0.65);
+}
+
+.garden-pot-card.is-crow-damaged,
+.garden-pot-card.is-pest-damaged {
+  border-color: rgba(150, 82, 38, .62);
+  box-shadow: 0 0 0 2px rgba(170, 92, 43, .12), inset 0 -16px 35px rgba(117, 63, 31, .08);
+}
+.garden-pot-card.is-crow-damaged .garden-plant-svg,
+.garden-pot-card.is-crow-damaged .microgreen-canopy svg,
+.garden-pot-card.is-pest-damaged .garden-plant-svg,
+.garden-pot-card.is-pest-damaged .microgreen-canopy svg {
+  filter: saturate(.68) sepia(.18);
+  animation: damaged-plant-shiver 1.8s ease-in-out infinite;
+}
+@keyframes damaged-plant-shiver {
+  0%, 100% { transform: rotate(-1deg); }
+  50% { transform: rotate(1deg); }
 }
 
 .water-timer-pill {
@@ -2298,7 +2374,7 @@
   transition: background-color 1.2s ease, filter 1.2s ease;
 }
 
-#screen-garden > *:not(.weather-atmosphere):not(.garden-visitor) {
+#screen-garden > *:not(.weather-atmosphere):not(.garden-visitor):not(.garden-crow) {
   position: relative;
   z-index: 2;
 }
@@ -2307,6 +2383,8 @@
   position: absolute;
   z-index: 25;
 }
+
+#screen-garden > .garden-crow { position: absolute; z-index: 42; }
 
 .weather-atmosphere {
   position: absolute;
@@ -2810,6 +2888,46 @@
   flex: 0 0 auto;
 }
 
+.garden-test-menu { position: relative; }
+.garden-test-menu > summary {
+  list-style: none;
+  min-height: 52px;
+  display: flex;
+  align-items: center;
+  padding: 0 16px;
+  border: 1px dashed rgba(10, 29, 8, .38);
+  border-radius: 17px;
+  background: rgba(251, 253, 246, .78);
+  color: #52604d;
+  cursor: pointer;
+  font: 600 11px/1 'JetBrains Mono', monospace;
+}
+.garden-test-menu > summary::-webkit-details-marker { display: none; }
+.garden-test-menu-popover {
+  position: absolute;
+  top: calc(100% + 8px);
+  right: 0;
+  z-index: 80;
+  display: grid;
+  min-width: 150px;
+  padding: 8px;
+  border: 1px solid rgba(10,29,8,.18);
+  border-radius: 15px;
+  background: #fbfdf6;
+  box-shadow: 0 16px 35px rgba(30,45,22,.16);
+}
+.garden-test-menu-popover button {
+  min-height: 38px;
+  border: 0;
+  border-radius: 10px;
+  background: transparent;
+  text-align: left;
+  padding: 0 11px;
+  color: #0a1d08;
+  cursor: pointer;
+}
+.garden-test-menu-popover button:hover { background: #edf3e2; }
+
 .warehouse-button {
   display: inline-flex;
   align-items: center;
@@ -2962,8 +3080,8 @@ body[data-screen="screen-shop"] {
 
 .garden-visitor {
   position: absolute;
-  top: var(--visitor-y, 220px);
-  left: -70px;
+  top: 0;
+  left: 0;
   z-index: 25;
   display: grid;
   place-items: center;
@@ -2973,22 +3091,137 @@ body[data-screen="screen-shop"] {
   background: transparent;
   cursor: pointer;
   pointer-events: auto;
-  animation: garden-visitor-flight 14s linear forwards;
   filter: drop-shadow(0 4px 4px rgba(45, 71, 34, 0.18));
-  font-size: 38px;
   line-height: 1;
 }
-.garden-visitor.is-caught { animation: garden-visitor-caught 0.32s ease forwards; }
-
-@keyframes garden-visitor-flight {
-  0% { transform: translate3d(0, 0, 0) rotate(-5deg); }
-  25% { transform: translate3d(28vw, -32px, 0) rotate(4deg); }
-  55% { transform: translate3d(58vw, 24px, 0) rotate(-3deg); }
-  80% { transform: translate3d(84vw, -18px, 0) rotate(5deg); }
-  100% { transform: translate3d(calc(100vw + 130px), 10px, 0) rotate(0); }
+.garden-visitor-glyph {
+  display: block;
+  font-size: 38px;
+  transform-origin: 50% 55%;
+  animation: garden-creature-flap .24s ease-in-out infinite alternate;
 }
-@keyframes garden-wing-flap { from { scale: 1 0.55; } to { scale: 1 1; } }
+.garden-visitor--bee .garden-visitor-glyph { animation-duration: .14s; }
+.garden-visitor.is-caught { animation: garden-visitor-caught 0.32s ease forwards; }
+@keyframes garden-creature-flap {
+  from { transform: translateY(-3px) rotate(-8deg) scaleX(.76); }
+  to { transform: translateY(3px) rotate(7deg) scaleX(1.06); }
+}
 @keyframes garden-visitor-caught { to { opacity: 0; scale: 1.6; } }
+
+.garden-crow {
+  left: 0;
+  top: 0;
+  width: 72px;
+  height: 64px;
+  display: grid;
+  place-items: center;
+  border: 0;
+  background: transparent;
+  cursor: pointer;
+  filter: drop-shadow(0 6px 5px rgba(11, 15, 9, .28));
+}
+.garden-crow-glyph {
+  display: block;
+  font-size: 44px;
+  transform-origin: 50% 60%;
+  animation: crow-wingbeat .3s ease-in-out infinite alternate;
+}
+.garden-crow.is-perched .garden-crow-glyph { animation: crow-watch 1.8s ease-in-out infinite; }
+.garden-crow.is-pecking .garden-crow-glyph { animation: crow-peck .24s ease-in-out 6; }
+@keyframes crow-wingbeat { from { transform: rotate(-12deg) scaleY(.78); } to { transform: rotate(8deg) scaleY(1.08); } }
+@keyframes crow-watch { 0%,100% { transform: rotate(-2deg); } 45% { transform: rotate(4deg); } 55% { transform: rotate(4deg) translateY(2px); } }
+@keyframes crow-peck { from { transform: rotate(0); } to { transform: rotate(26deg) translate(4px,7px); } }
+
+.pest-status-banner {
+  position: fixed !important;
+  top: 86px;
+  left: 50%;
+  z-index: 68 !important;
+  transform: translateX(-50%);
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: min(620px, calc(100vw - 32px));
+  padding: 12px 16px;
+  border: 1px solid #8f3d25;
+  border-radius: 16px;
+  background: rgba(73, 28, 17, .95);
+  color: #fff8e8;
+  box-shadow: 0 18px 55px rgba(83, 34, 20, .3);
+}
+.pest-status-banner[hidden] { display: none; }
+.pest-status-banner > span:nth-child(2) { display: grid; gap: 3px; flex: 1; }
+.pest-status-banner small { opacity: .72; }
+.pest-status-icon { display:grid; place-items:center; width:30px; height:30px; border-radius:50%; background:#e0a12e; color:#3b190e; font-weight:900; }
+.pest-status-progress { font: 700 12px/1 'JetBrains Mono', monospace; }
+
+.pest-alert {
+  position: fixed !important;
+  inset: 0;
+  z-index: 1200 !important;
+  display: grid;
+  place-items: center;
+  padding: 20px;
+  background: rgba(35, 17, 10, .58);
+  backdrop-filter: blur(4px);
+}
+.pest-alert[hidden] { display: none; }
+.pest-alert-card {
+  width: min(480px, 100%);
+  padding: 34px;
+  border: 1px solid #a6502c;
+  border-radius: 28px;
+  background: linear-gradient(145deg, #fff8e9, #f3dfba);
+  text-align: center;
+  box-shadow: 0 30px 90px rgba(33, 16, 8, .42);
+  animation: pest-alert-enter .38s cubic-bezier(.2,.8,.2,1) both;
+}
+.pest-alert-kicker { color:#9c3e24; font:700 10px/1 'JetBrains Mono',monospace; letter-spacing:.13em; text-transform:uppercase; }
+.pest-alert-symbol { margin: 14px 0 4px; font-size: 54px; animation: pest-symbol 1s ease-in-out infinite alternate; }
+.pest-alert-card h2 { margin: 8px 0 12px; color:#3e1d12; }
+.pest-alert-card p { margin: 0 auto 24px; max-width: 390px; color:#65483d; line-height:1.55; }
+@keyframes pest-alert-enter { from { opacity:0; transform:scale(.92) translateY(18px); } }
+@keyframes pest-symbol { to { transform: rotate(-8deg) translateY(-4px); } }
+
+#screen-garden.pest-attack-active::after {
+  content:"";
+  position:fixed;
+  inset:0;
+  z-index:24;
+  pointer-events:none;
+  box-shadow: inset 0 0 110px rgba(113, 35, 17, .25);
+  animation: pest-danger-pulse 1.8s ease-in-out infinite alternate;
+}
+@keyframes pest-danger-pulse { to { box-shadow: inset 0 0 155px rgba(135, 43, 18, .4); } }
+
+.garden-caterpillar {
+  position:absolute;
+  left:var(--bug-x,45%);
+  top:var(--bug-y,34%);
+  z-index:12;
+  width:28px;
+  height:12px;
+  border-radius:50% 55% 48% 52%;
+  background:repeating-linear-gradient(90deg,#789b32 0 5px,#a9c45a 5px 9px);
+  box-shadow:7px 1px 0 -5px #37451c;
+  pointer-events:none;
+  animation:caterpillar-crawl 2.6s ease-in-out infinite alternate;
+}
+.garden-caterpillar::before { content:""; position:absolute; right:-3px; top:1px; width:9px; height:9px; border-radius:50%; background:#6e8b2b; }
+@keyframes caterpillar-crawl { from { transform:translate(-9px,2px) rotate(-5deg); } to { transform:translate(13px,-3px) rotate(5deg); } }
+.garden-pot-card.is-pest-treated .garden-caterpillar { animation:pest-bug-flee .45s ease-in forwards; }
+@keyframes pest-bug-flee { to { opacity:0; transform:translateY(24px) rotate(35deg); } }
+.pest-spray-mist {
+  position:fixed;
+  z-index:10000;
+  width:80px;
+  height:80px;
+  border-radius:50%;
+  pointer-events:none;
+  background:radial-gradient(circle,rgba(220,239,190,.75) 0 6%,transparent 8% 18%,rgba(220,239,190,.55) 20% 24%,transparent 26%);
+  animation:pest-mist .65s ease-out forwards;
+}
+@keyframes pest-mist { from { opacity:.9; transform:scale(.35); } to { opacity:0; transform:scale(1.35); } }
 
 #screen-garden[data-weather="rain"] .garden-plant {
   animation-name: weather-grown-plant-sway;
@@ -3008,7 +3241,7 @@ body[data-screen="screen-shop"] {
 @media (max-width: 768px) {
   .garden-toolbar .garden-view-tabs { justify-content: flex-start; width: 100%; max-width: none; margin-left: 0; }
   .garden-toolbar .garden-view-tab { flex: 0 0 auto; min-width: auto; padding: 10px 15px; }
-  .garden-toolbar-actions { width: 100%; display: grid; grid-template-columns: auto 1fr; }
+  .garden-toolbar-actions { width: 100%; display: grid; grid-template-columns: auto 1fr auto; }
   .warehouse-button { justify-content: center; }
   .weather-control, .weather-widget { min-width: 0; }
   .warehouse-list { grid-template-columns: 1fr; }
@@ -3019,6 +3252,7 @@ body[data-screen="screen-shop"] {
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .garden-visitor { left: auto; right: 18px; animation: none !important; }
+  .garden-visitor { animation: none !important; }
   .visitor-wing { animation: none !important; }
+  .garden-visitor-glyph, .garden-crow-glyph, .garden-caterpillar { animation: none !important; }
 }

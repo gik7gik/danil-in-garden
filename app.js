@@ -29,11 +29,16 @@
     const isMicrogreen = plant.kind === 'microgreen' || (typeof MICROGREEN_IDS !== 'undefined' && MICROGREEN_IDS.includes(plant.id));
     const wasAutoMarkedWatered = Number.isFinite(plant.plantedAt) &&
       Number.isFinite(plant.lastWatered) && plant.lastWatered === plant.plantedAt;
+    const damageState = {
+      crowRecoveryUntil: Number.isFinite(plant.crowRecoveryUntil) ? plant.crowRecoveryUntil : null,
+      pestRecoveryUntil: Number.isFinite(plant.pestRecoveryUntil) ? plant.pestRecoveryUntil : null,
+    };
     if (isMicrogreen) {
-      return { ...plant, kind: 'microgreen', lastWatered: wasAutoMarkedWatered ? null : plant.lastWatered };
+      return { ...plant, ...damageState, kind: 'microgreen', lastWatered: wasAutoMarkedWatered ? null : plant.lastWatered };
     }
     return {
       ...plant,
+      ...damageState,
       kind: 'plant',
       lastWatered: wasAutoMarkedWatered ? null : plant.lastWatered,
       growthPoints: Math.max(0, Math.min(6, Number(plant.growthPoints) || 0)),
@@ -175,13 +180,31 @@
   }
 
   function canWaterPlant(plant, now = Date.now()) {
-    return Boolean(plant) && !plantNeedsPotUpgrade(plant) && !plantIsHarvestReady(plant, now) && !plantIsWilted(plant, now);
+    return Boolean(plant) && plantRecoveryRemaining(plant) <= 0 && !plantNeedsPotUpgrade(plant) && !plantIsHarvestReady(plant, now) && !plantIsWilted(plant, now);
   }
 
   const MICROGREEN_TRAY_KEY = 'adaline_microgreen_trays';
   const MICROGREEN_LEVELS_KEY = 'adaline_microgreen_levels';
   const MICROGREEN_MAX_LEVEL = 10;
   const MICROGREEN_MAX_TRAYS = 12;
+  const PEST_TREATMENT_KEY = 'adaline_pest_treatment_stock_v1';
+
+  function getPestTreatmentStock() {
+    const value = parseInt(localStorage.getItem(PEST_TREATMENT_KEY), 10);
+    return Number.isFinite(value) ? Math.max(0, value) : 0;
+  }
+
+  function setPestTreatmentStock(value) {
+    localStorage.setItem(PEST_TREATMENT_KEY, String(Math.max(0, Number(value) || 0)));
+    updatePestSprayUi();
+  }
+
+  function plantRecoveryRemaining(plant) {
+    return Math.max(0, Math.max(
+      Number(plant.crowRecoveryUntil) || 0,
+      Number(plant.pestRecoveryUntil) || 0
+    ) - Date.now());
+  }
   const MICROGREEN_UPGRADE_COST = {
     2: 20, 3: 35, 4: 60, 5: 100, 6: 165,
     7: 260, 8: 400, 9: 620, 10: 950,
@@ -1202,6 +1225,16 @@
       const shopKind = card.dataset.shopKind;
       const btn     = card.querySelector('.shop-buy-btn');
       if (!btn) return;
+      card.hidden = false;
+
+      if (shopKind === 'pest-treatment') {
+        const count = getPestTreatmentStock();
+        const levelEl = card.querySelector('.shop-seed-level');
+        if (levelEl) levelEl.textContent = `В запасе: ${count}`;
+        btn.textContent = 'Купить ещё';
+        btn.disabled = false;
+        return;
+      }
 
       if (shopKind === 'microgreen-tray') {
         const count = getMicrogreenTrayCount();
@@ -1243,11 +1276,10 @@
         return;
       }
 
-      if (plantId && isPlanted(plantId)) {
+      if (isPurchased(itemId)) {
+        card.hidden = true;
+      } else if (plantId && isPlanted(plantId)) {
         btn.textContent = 'Уже посажено';
-        btn.disabled = true;
-      } else if (isPurchased(itemId)) {
-        btn.textContent = 'Куплено ✓';
         btn.disabled = true;
       } else {
         btn.textContent = 'Купить';
@@ -1297,6 +1329,8 @@
           setMicrogreenTrayCount(getMicrogreenTrayCount() + 1);
         } else if (shopKind === 'microgreen-culture') {
           setMicrogreenLevel(plantId, getMicrogreenLevel(plantId) + 1);
+        } else if (shopKind === 'pest-treatment') {
+          setPestTreatmentStock(getPestTreatmentStock() + 1);
         } else {
           setPurchased(itemId);
         }
@@ -1878,7 +1912,10 @@
         const wilted = plantIsWilted(p);
         const categoryId = PLANT_CATEGORY[p.id] || 'herbs';
         const potPrice = LARGE_POT_PRICE[categoryId] || 55;
-        const stateClass = wilted ? ' is-wilted' : harvestReady ? ' is-harvest-ready' : needsPot ? ' needs-pot-upgrade' : '';
+        const recoveringFromCrow = (Number(p.crowRecoveryUntil) || 0) > Date.now();
+        const recoveringFromPests = (Number(p.pestRecoveryUntil) || 0) > Date.now();
+        const stateClass = (wilted ? ' is-wilted' : harvestReady ? ' is-harvest-ready' : needsPot ? ' needs-pot-upgrade' : '') +
+          (recoveringFromCrow ? ' is-crow-damaged' : '') + (recoveringFromPests ? ' is-pest-damaged' : '');
         const action = needsPot
           ? `<button class="garden-state-action" data-garden-action="upgrade-pot" type="button">Большой горшок · ${potPrice} монет</button>`
           : harvestReady
@@ -1903,6 +1940,7 @@
     }
 
     tickWaterTimers();
+    renderPestVisuals();
 
     // "Посадить ещё" — disable when all *available* plants are planted
     // Available = base 10 + any shop plants the user has purchased
@@ -1956,7 +1994,9 @@
       const i = entry.index;
       const level = Math.max(1, getMicrogreenLevel(p.id));
       const reward = microgreenRewardRange(p.id);
-      return `<div class="microgreen-tray-card garden-pot-card" data-garden-index="${i}">
+      const damageClass = (Number(p.crowRecoveryUntil) || 0) > Date.now() ? ' is-crow-damaged' :
+        (Number(p.pestRecoveryUntil) || 0) > Date.now() ? ' is-pest-damaged' : '';
+      return `<div class="microgreen-tray-card garden-pot-card${damageClass}" data-garden-index="${i}">
           ${microgreenTrayMarkup(p)}
           <span class="microgreen-tray-name">${PLANT_CATALOG[p.id] || p.name}</span>
           <span class="microgreen-tray-meta">уровень ${level} · ${reward[0]}–${reward[1]} монет</span>
@@ -1988,6 +2028,7 @@
       actions.innerHTML = `<button class="btn btn-ghost" disabled>Все доступные культуры посажены</button>`;
     }
     tickWaterTimers();
+    renderPestVisuals();
   }
 
   let activeGardenView = 'vegetables';
@@ -2034,6 +2075,18 @@
       const pill = document.getElementById('water-timer-' + i);
       const card = pill ? pill.closest('.garden-pot-card') : null;
       if (!pillText || !pill || !card) return;
+
+      const recovery = plantRecoveryRemaining(p);
+      if (recovery > 0) {
+        const pestDamage = (Number(p.pestRecoveryUntil) || 0) > Date.now();
+        pillText.textContent = `${pestDamage ? 'лечение' : 'восстановление'}: ${formatMMSS(recovery)}`;
+        pill.classList.remove('water-timer-pill--ready', 'water-timer-pill--harvest');
+        card.classList.remove('ready-to-water');
+        card.classList.toggle('is-crow-damaged', !pestDamage);
+        card.classList.toggle('is-pest-damaged', pestDamage);
+        return;
+      }
+      card.classList.remove('is-crow-damaged', 'is-pest-damaged');
 
       if (plantIsWilted(p)) {
         if (!card.classList.contains('is-wilted') && activeGardenView !== 'microgreens') {
@@ -2184,35 +2237,67 @@
   });
   updateWarehouseCount();
 
-  /* Small garden visitors. They are occasional, clickable moments rather
-     than a second timer system, so the garden stays calm between visits. */
+  /* ── Living garden events ────────────────────────────────────────
+     Visitors are calm bonuses; the crow and pests are deliberately rare.
+     Real events only start while a planted garden category is visible. */
+  const randomBetween = (min, max) => min + Math.random() * (max - min);
+  const visibleGardenCards = () => Array.from(document.querySelectorAll('#screen-garden.active .garden-view-panel.active .garden-pot-card:not(.is-empty)'));
+  const warehouseIsOpen = () => Boolean(document.getElementById('warehouse-modal') && !document.getElementById('warehouse-modal').hidden);
+
   let gardenVisitorTimer = null;
+  let visitorHistory = [];
   function scheduleGardenVisitor(delay) {
     clearTimeout(gardenVisitorTimer);
-    gardenVisitorTimer = setTimeout(spawnGardenVisitor, delay || (45000 + Math.random() * 45000));
+    gardenVisitorTimer = setTimeout(spawnGardenVisitor, delay || randomBetween(90000, 180000));
+  }
+
+  function chooseGardenVisitor() {
+    let type = Math.random() < .5 ? 'butterfly' : 'bee';
+    const last = visitorHistory[visitorHistory.length - 1];
+    const beforeLast = visitorHistory[visitorHistory.length - 2];
+    // Break obvious A-B-A-B sequences while still allowing natural streaks.
+    if (type === beforeLast && type !== last && Math.random() < .72) type = last;
+    visitorHistory = [...visitorHistory.slice(-2), type];
+    return type;
   }
 
   function spawnGardenVisitor(forcedType) {
     const screen = document.getElementById('screen-garden');
-    const warehouseOpen = document.getElementById('warehouse-modal') && !document.getElementById('warehouse-modal').hidden;
-    if (!screen || !screen.classList.contains('active') || warehouseOpen || screen.querySelector('.garden-visitor')) {
-      scheduleGardenVisitor(20000);
+    if (!screen || !screen.classList.contains('active') || warehouseIsOpen() || screen.querySelector('.garden-visitor') || pestAttack) {
+      scheduleGardenVisitor(30000);
       return;
     }
-    const type = forcedType || (Math.random() < 0.55 ? 'butterfly' : 'bee');
+    const type = forcedType || chooseGardenVisitor();
     const visitor = document.createElement('button');
     visitor.type = 'button';
     visitor.className = `garden-visitor garden-visitor--${type}`;
     visitor.setAttribute('aria-label', type === 'bee' ? 'Поймать пчелу' : 'Поймать бабочку');
-    const minY = 170;
-    const maxY = Math.max(minY + 70, Math.min(420, Math.round(screen.clientHeight * 0.48)));
-    visitor.style.setProperty('--visitor-y', `${minY + Math.round(Math.random() * (maxY - minY))}px`);
-    visitor.textContent = type === 'bee' ? '🐝' : '🦋';
+    visitor.innerHTML = `<span class="garden-visitor-glyph" aria-hidden="true">${type === 'bee' ? '🐝' : '🦋'}</span>`;
     screen.appendChild(visitor);
+
+    const screenWidth = screen.clientWidth;
+    const minY = Math.min(175, Math.max(95, screen.clientHeight * .18));
+    const maxY = Math.max(minY + 90, Math.min(screen.clientHeight * .7, 560));
+    const fromLeft = Math.random() < .5;
+    const points = 8 + Math.floor(Math.random() * 3);
+    let y = randomBetween(minY, maxY);
+    const keyframes = Array.from({ length: points }, (_, index) => {
+      const progress = index / (points - 1);
+      y = Math.max(minY, Math.min(maxY, y + randomBetween(-105, 105)));
+      const x = fromLeft
+        ? -90 + progress * (screenWidth + 190)
+        : screenWidth + 90 - progress * (screenWidth + 190);
+      return { transform: `translate3d(${x}px, ${y}px, 0) rotate(${randomBetween(-13, 13)}deg)`, offset: progress };
+    });
+    const flight = visitor.animate(keyframes, {
+      duration: type === 'bee' ? randomBetween(16000, 22000) : randomBetween(19000, 27000),
+      easing: 'linear', fill: 'forwards',
+    });
     let caught = false;
     visitor.addEventListener('click', () => {
       if (caught) return;
       caught = true;
+      flight.cancel();
       if (type === 'bee') {
         const reward = 8 + Math.floor(Math.random() * 6);
         addCoins(reward);
@@ -2224,8 +2309,219 @@
       visitor.classList.add('is-caught');
       setTimeout(() => visitor.remove(), 350);
     });
-    setTimeout(() => visitor.remove(), 15000);
+    flight.onfinish = () => visitor.remove();
     scheduleGardenVisitor();
+  }
+
+  /* Crow: 5–25 real minutes, ten seconds to scare it away. */
+  let crowTimer = null;
+  let activeCrow = null;
+  function scheduleCrow(delay) {
+    clearTimeout(crowTimer);
+    crowTimer = setTimeout(() => spawnCrow(false), delay || randomBetween(5 * 60000, 25 * 60000));
+  }
+
+  function finishCrow(crow, targetX, targetY, message) {
+    if (!crow || !crow.isConnected) return;
+    const direction = Math.random() < .5 ? -1 : 1;
+    crow.classList.remove('is-perched', 'is-pecking');
+    crow.animate([
+      { transform: `translate3d(${targetX}px, ${targetY}px, 0) rotate(0)` },
+      { transform: `translate3d(${targetX + direction * 180}px, ${Math.max(20, targetY - 150)}px, 0) rotate(${direction * 12}deg)` },
+      { transform: `translate3d(${direction < 0 ? -120 : innerWidth + 120}px, -90px, 0) rotate(${direction * 6}deg)` },
+    ], { duration: 1500, easing: 'cubic-bezier(.35,.05,.4,1)', fill: 'forwards' }).onfinish = () => crow.remove();
+    if (message) showWeatherToast(message);
+    activeCrow = null;
+    scheduleCrow();
+  }
+
+  function spawnCrow(isTest = false) {
+    const screen = document.getElementById('screen-garden');
+    const cards = visibleGardenCards();
+    if (!screen || !screen.classList.contains('active') || warehouseIsOpen() || pestAttack || activeCrow || !cards.length) {
+      if (!isTest) scheduleCrow(60000);
+      else showWeatherToast('Вороне пока некуда сесть: открой раздел с растениями.');
+      return;
+    }
+    const card = cards[Math.floor(Math.random() * cards.length)];
+    const index = Number(card.dataset.gardenIndex);
+    const screenRect = screen.getBoundingClientRect();
+    const cardRect = card.getBoundingClientRect();
+    const targetX = cardRect.left - screenRect.left + cardRect.width * randomBetween(.55, .76) - 36;
+    const targetY = cardRect.top - screenRect.top + Math.min(92, cardRect.height * .27) - 38;
+    const crow = document.createElement('button');
+    crow.type = 'button';
+    crow.className = 'garden-crow';
+    crow.setAttribute('aria-label', 'Отогнать ворону');
+    crow.innerHTML = '<span class="garden-crow-glyph" aria-hidden="true">🐦‍⬛</span>';
+    screen.appendChild(crow);
+    activeCrow = { crow, index };
+    const fromLeft = Math.random() < .5;
+    const startX = fromLeft ? -110 : screen.clientWidth + 110;
+    const landing = crow.animate([
+      { transform: `translate3d(${startX}px, 35px, 0) rotate(${fromLeft ? -12 : 12}deg)` },
+      { transform: `translate3d(${targetX + (fromLeft ? -110 : 110)}px, ${Math.max(20, targetY - 100)}px, 0) rotate(${fromLeft ? 8 : -8}deg)` },
+      { transform: `translate3d(${targetX}px, ${targetY}px, 0) rotate(0)` },
+    ], { duration: 1900, easing: 'cubic-bezier(.3,.05,.25,1)', fill: 'forwards' });
+    let resolved = false;
+    let peckTimer = null;
+    landing.onfinish = () => {
+      if (resolved) return;
+      crow.classList.add('is-perched');
+      peckTimer = setTimeout(() => {
+        if (resolved || !crow.isConnected) return;
+        resolved = true;
+        crow.classList.remove('is-perched');
+        crow.classList.add('is-pecking');
+        const garden = getGarden();
+        if (garden[index]) {
+          garden[index].crowRecoveryUntil = Date.now() + 45000;
+          saveGarden(garden);
+        }
+        setTimeout(() => {
+          if (activeGardenView === 'microgreens') renderMicrogreens(); else renderGarden(activeGardenView);
+          finishCrow(crow, targetX, targetY, 'Ворона поклевала растение. Оно восстановится через 45 секунд.');
+        }, 1350);
+      }, 10000);
+    };
+    crow.addEventListener('click', () => {
+      if (resolved) return;
+      resolved = true;
+      clearTimeout(peckTimer);
+      landing.cancel();
+      finishCrow(crow, targetX, targetY, 'Ворона испугалась и улетела. Растение в порядке.');
+    });
+  }
+
+  /* Caterpillar attack: rarer than the crow. It lasts 90 seconds while the
+     page is visible. One treatment pack covers every affected plant. */
+  let pestTimer = null;
+  let pestDeadlineTimer = null;
+  let pestAttack = null;
+  function schedulePestAttack(delay) {
+    clearTimeout(pestTimer);
+    pestTimer = setTimeout(() => startPestAttack(false), delay || randomBetween(9 * 60000, 30 * 60000));
+  }
+
+  function updatePestSprayUi() {
+    const spray = document.getElementById('pest-spray');
+    const count = document.getElementById('pest-spray-count');
+    const stock = getPestTreatmentStock();
+    if (count) count.textContent = String(stock);
+    if (!spray) return;
+    spray.disabled = !pestAttack || stock < 1;
+    spray.title = !pestAttack ? 'Средство можно использовать только во время нападения' :
+      stock < 1 ? 'Средство закончилось — купи его в магазине' : 'Перетащи средство на каждое заражённое растение';
+  }
+
+  function updatePestStatus() {
+    const banner = document.getElementById('pest-status-banner');
+    const progress = document.getElementById('pest-status-progress');
+    if (!banner || !progress) return;
+    banner.hidden = !pestAttack;
+    progress.textContent = pestAttack ? `${pestAttack.treated.size} / ${pestAttack.affected.size}` : '0 / 0';
+    const copy = document.getElementById('pest-status-copy');
+    if (copy && pestAttack) copy.textContent = getPestTreatmentStock() > 0
+      ? 'Обработай растения во всех разделах сада'
+      : 'Средства нет — купи его в магазине за 50 монет';
+    updatePestSprayUi();
+  }
+
+  function renderPestVisuals() {
+    if (!pestAttack) return;
+    visibleGardenCards().forEach(card => {
+      const index = Number(card.dataset.gardenIndex);
+      if (!pestAttack.affected.has(index)) return;
+      card.classList.toggle('is-pest-treated', pestAttack.treated.has(index));
+      if (pestAttack.treated.has(index) || card.querySelector('.garden-caterpillar')) return;
+      const bugHost = card.querySelector('.microgreen-tray-zone, .garden-pot-zone') || card;
+      for (let i = 0; i < 2; i++) {
+        const bug = document.createElement('span');
+        bug.className = 'garden-caterpillar';
+        bug.style.setProperty('--bug-x', `${20 + Math.random() * 56}%`);
+        bug.style.setProperty('--bug-y', `${8 + Math.random() * 28}%`);
+        bug.style.animationDelay = `${-Math.random() * 2.5}s`;
+        bugHost.appendChild(bug);
+      }
+    });
+  }
+
+  function startPestAttack(isTest = false) {
+    const screen = document.getElementById('screen-garden');
+    const cards = visibleGardenCards();
+    if (!screen || !screen.classList.contains('active') || warehouseIsOpen() || activeCrow || pestAttack || !cards.length || document.hidden) {
+      if (!isTest) schedulePestAttack(90000);
+      else showWeatherToast('Для теста открой раздел, где есть растения.');
+      return;
+    }
+    pestAttack = {
+      affected: new Set(getGarden().map((plant, index) => index)),
+      treated: new Set(),
+      startedAt: Date.now(),
+    };
+    screen.classList.add('pest-attack-active');
+    document.getElementById('pest-alert').hidden = false;
+    const copy = document.getElementById('pest-alert-copy');
+    if (copy) copy.textContent = getPestTreatmentStock() > 0
+      ? 'Гусеницы появились по всему саду. Возьми средство в верхней панели и обработай каждое растение во всех разделах.'
+      : 'Гусеницы появились по всему саду, но средства нет. Купи его в магазине за 50 монет и вернись обработать растения во всех разделах.';
+    updatePestStatus();
+    renderPestVisuals();
+    clearTimeout(pestDeadlineTimer);
+    pestDeadlineTimer = setTimeout(failPestAttack, 90000);
+  }
+
+  function clearPestAttack() {
+    clearTimeout(pestDeadlineTimer);
+    pestAttack = null;
+    document.getElementById('screen-garden')?.classList.remove('pest-attack-active');
+    const alert = document.getElementById('pest-alert');
+    if (alert) alert.hidden = true;
+    updatePestStatus();
+    document.querySelectorAll('.garden-caterpillar').forEach(bug => bug.remove());
+    document.querySelectorAll('.is-pest-treated').forEach(card => card.classList.remove('is-pest-treated'));
+    schedulePestAttack();
+  }
+
+  function completePestAttack() {
+    if (!pestAttack) return;
+    setPestTreatmentStock(getPestTreatmentStock() - 1);
+    clearPestAttack();
+    showWeatherToast('Сад полностью обработан. Нашествие остановлено.');
+  }
+
+  function failPestAttack() {
+    if (!pestAttack) return;
+    if (document.hidden) {
+      pestDeadlineTimer = setTimeout(failPestAttack, 30000);
+      return;
+    }
+    const garden = getGarden();
+    pestAttack.affected.forEach(index => {
+      if (garden[index]) garden[index].pestRecoveryUntil = Date.now() + 120000;
+    });
+    saveGarden(garden);
+    clearPestAttack();
+    if (activeGardenView === 'microgreens') renderMicrogreens(); else renderGarden(activeGardenView);
+    showWeatherToast('Вредители повредили растения. Им понадобится 2 минуты на восстановление.');
+  }
+
+  function treatPestCard(card) {
+    if (!pestAttack || getPestTreatmentStock() < 1) return false;
+    const index = Number(card.dataset.gardenIndex);
+    if (!pestAttack.affected.has(index) || pestAttack.treated.has(index)) return false;
+    pestAttack.treated.add(index);
+    card.classList.add('is-pest-treated');
+    const rect = card.getBoundingClientRect();
+    const mist = document.createElement('span');
+    mist.className = 'pest-spray-mist';
+    mist.style.left = `${rect.left + rect.width / 2 - 40}px`;
+    mist.style.top = `${rect.top + rect.height / 2 - 40}px`;
+    document.body.appendChild(mist);
+    setTimeout(() => mist.remove(), 700);
+    updatePestStatus();
+    if (pestAttack.treated.size >= pestAttack.affected.size) setTimeout(completePestAttack, 500);
+    return true;
   }
 
   document.addEventListener('DOMContentLoaded', () => {
@@ -2236,6 +2532,90 @@
     } else {
       scheduleGardenVisitor();
     }
+    scheduleCrow();
+    schedulePestAttack();
+    updatePestSprayUi();
+  });
+
+  document.getElementById('test-crow-event')?.addEventListener('click', () => {
+    document.getElementById('garden-test-menu')?.removeAttribute('open');
+    spawnCrow(true);
+  });
+  document.getElementById('test-pest-event')?.addEventListener('click', () => {
+    document.getElementById('garden-test-menu')?.removeAttribute('open');
+    startPestAttack(true);
+  });
+  document.getElementById('pest-alert-close')?.addEventListener('click', () => {
+    document.getElementById('pest-alert').hidden = true;
+  });
+
+  document.addEventListener('DOMContentLoaded', () => {
+    const spray = document.getElementById('pest-spray');
+    if (!spray) return;
+    const home = spray.parentNode;
+    let dragging = false;
+    let offsetX = 0;
+    let offsetY = 0;
+    let originLeft = 0;
+    let originTop = 0;
+    let lastCard = null;
+
+    function returnSprayHome() {
+      spray.style.transition = 'left .28s ease, top .28s ease, transform .18s ease';
+      spray.style.left = `${originLeft}px`;
+      spray.style.top = `${originTop}px`;
+      setTimeout(() => {
+        home.appendChild(spray);
+        ['position', 'left', 'top', 'margin', 'zIndex', 'transition'].forEach(name => { spray.style[name] = ''; });
+      }, 290);
+    }
+
+    function onMove(event) {
+      if (!dragging) return;
+      if (event.cancelable) event.preventDefault();
+      spray.style.left = `${event.clientX - offsetX}px`;
+      spray.style.top = `${event.clientY - offsetY}px`;
+      const card = visibleGardenCards().find(item => {
+        const rect = item.getBoundingClientRect();
+        return event.clientX >= rect.left - 35 && event.clientX <= rect.right + 35 &&
+          event.clientY >= rect.top - 35 && event.clientY <= rect.bottom + 35;
+      });
+      if (card && card !== lastCard && treatPestCard(card)) lastCard = card;
+      if (!card) lastCard = null;
+    }
+
+    function onUp() {
+      if (!dragging) return;
+      dragging = false;
+      spray.classList.remove('dragging');
+      document.removeEventListener('pointermove', onMove);
+      document.removeEventListener('pointerup', onUp);
+      document.removeEventListener('pointercancel', onUp);
+      returnSprayHome();
+    }
+
+    spray.addEventListener('pointerdown', event => {
+      if (spray.disabled || !pestAttack || getPestTreatmentStock() < 1) return;
+      event.preventDefault();
+      const rect = spray.getBoundingClientRect();
+      originLeft = rect.left;
+      originTop = rect.top;
+      offsetX = event.clientX - rect.left;
+      offsetY = event.clientY - rect.top;
+      dragging = true;
+      lastCard = null;
+      document.body.appendChild(spray);
+      spray.style.position = 'fixed';
+      spray.style.left = `${originLeft}px`;
+      spray.style.top = `${originTop}px`;
+      spray.style.margin = '0';
+      spray.style.zIndex = '9999';
+      spray.style.transition = 'none';
+      spray.classList.add('dragging');
+      document.addEventListener('pointermove', onMove, { passive: false });
+      document.addEventListener('pointerup', onUp);
+      document.addEventListener('pointercancel', onUp);
+    });
   });
 
   /* ── Watering can: drag & drop ──────────────────────────────────
