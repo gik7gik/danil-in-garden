@@ -1,0 +1,1072 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Adaline Garden — Вырасти свой сад с умом</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700&family=JetBrains+Mono:wght@400&display=swap" rel="stylesheet" />
+  
+  <link rel="stylesheet" href="styles.css?v=layout-fix-7">
+</head>
+<body>
+
+<!-- ── Navigation ──────────────────────────────────────────────── -->
+<nav>
+  <div class="nav-inner">
+    <a href="/" class="nav-logo" aria-label="Adaline Garden — главная">
+      <div class="nav-logo-mark">
+        <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+          <path d="M10 2C10 2 5 6 5 11C5 13.76 7.24 16 10 16C12.76 16 15 13.76 15 11C15 6 10 2 10 2Z" fill="#203b14" opacity="0.9"/>
+          <path d="M10 16V19" stroke="#203b14" stroke-width="1.5" stroke-linecap="round"/>
+          <path d="M7 13C7 13 5 12 4 10" stroke="#203b14" stroke-width="1" stroke-linecap="round" opacity="0.5"/>
+        </svg>
+        <span class="nav-logo-text">danil in garden</span>
+      </div>
+    </a>
+  </div>
+
+  <div class="nav-actions">
+    <button class="nav-home-btn" id="nav-home-btn" type="button" aria-label="На главную" disabled>
+      <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+        <path d="M3 9.2L10 3L17 9.2V16.2C17 16.7 16.7 17 16.2 17H12.5V12H7.5V17H3.8C3.3 17 3 16.7 3 16.2V9.2Z" fill="#d7e8b5" stroke="#0a1d08" stroke-width="1.3" stroke-linejoin="round"/>
+      </svg>
+      <span>Дом</span>
+    </button>
+
+    <div class="nav-extras">
+      <div class="watering-can-slot">
+        <div class="watering-can" id="watering-can" aria-label="Лейка для полива" title="Перетащи лейку на растение в «Моём саду», чтобы полить">
+          <svg viewBox="0 0 36 30" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+          <!-- arched handle -->
+          <path d="M9 13 C9 5 19 5 19 13" stroke="#0a1d08" stroke-width="1.4" fill="none" stroke-linecap="round"/>
+          <!-- can body -->
+          <path d="M6 13 H22 C23.5 13 24.5 14.2 24.3 15.7 L23 25 C22.8 26.3 21.7 27 20.4 27 H7.6 C6.3 27 5.2 26.3 5 25 L3.7 15.7 C3.5 14.2 4.5 13 6 13Z" fill="#d7e8b5" stroke="#0a1d08" stroke-width="1.4" stroke-linejoin="round"/>
+          <!-- curved spout -->
+          <path d="M22 16 L31 9.5 L33.4 10.3 L34 12.5 L25.5 19.5Z" fill="#d7e8b5" stroke="#0a1d08" stroke-width="1.2" stroke-linejoin="round"/>
+          <!-- rose (sprinkler head) with holes -->
+          <ellipse cx="32.3" cy="10.6" rx="3.1" ry="2.3" fill="#d7e8b5" stroke="#0a1d08" stroke-width="1.1" transform="rotate(-25 32.3 10.6)"/>
+          <circle cx="31" cy="10" r="0.45" fill="#0a1d08"/>
+          <circle cx="32.6" cy="9.6" r="0.45" fill="#0a1d08"/>
+          <circle cx="33.6" cy="11" r="0.45" fill="#0a1d08"/>
+          <circle cx="32" cy="11.6" r="0.45" fill="#0a1d08"/>
+          <!-- body shading accent -->
+          <path d="M8 17 H20" stroke="#4a3212" stroke-width="0.8" opacity="0.35" stroke-linecap="round"/>
+          </svg>
+        </div>
+      </div>
+
+      <span class="currency-pill currency-pill--gems" aria-label="Гемы">
+        <svg width="14" height="14" viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+          <path d="M2 5.2L4.2 1.5H9.8L12 5.2L7 12.5L2 5.2Z" fill="#3b82c4" opacity="0.85"/>
+          <path d="M2 5.2H12" stroke="#fbfdf6" stroke-width="0.6" opacity="0.6"/>
+          <path d="M4.6 5.2L7 12.5L9.4 5.2" stroke="#fbfdf6" stroke-width="0.6" opacity="0.6"/>
+          <path d="M4.2 1.5L4.6 5.2" stroke="#fbfdf6" stroke-width="0.5" opacity="0.5"/>
+          <path d="M9.8 1.5L9.4 5.2" stroke="#fbfdf6" stroke-width="0.5" opacity="0.5"/>
+        </svg>
+        <span id="gems-count">0</span>
+      </span>
+
+      <span class="currency-pill currency-pill--coins" aria-label="Монеты">
+        <svg width="14" height="14" viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+          <circle cx="7" cy="7" r="5.5" fill="#d4a72c" opacity="0.9"/>
+          <circle cx="7" cy="7" r="3.8" fill="none" stroke="#fbfdf6" stroke-width="0.6" opacity="0.6"/>
+          <text x="7" y="9.3" font-family="'JetBrains Mono', monospace" font-size="5.5" fill="#fbfdf6" text-anchor="middle" opacity="0.8">$</text>
+        </svg>
+        <span id="coins-count">0</span>
+      </span>
+
+      <a href="#" class="nav-shop-btn" id="nav-shop-btn" aria-label="Магазин">
+        <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+          <path d="M4 7L5 4H15L16 7" stroke="#0a1d08" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/>
+          <path d="M3.5 7H16.5L15.7 16.2C15.6 16.7 15.2 17 14.7 17H5.3C4.8 17 4.4 16.7 4.3 16.2L3.5 7Z" fill="#d7e8b5" opacity="0.55" stroke="#0a1d08" stroke-width="1.3" stroke-linejoin="round"/>
+          <path d="M7.2 7C7.2 8.5 8.5 9.7 10 9.7C11.5 9.7 12.8 8.5 12.8 7" stroke="#0a1d08" stroke-width="1.2" stroke-linecap="round"/>
+        </svg>
+        <span class="nav-shop-label">Магазин</span>
+      </a>
+    </div>
+
+  </div>
+</nav>
+
+<!-- ── Hero ────────────────────────────────────────────────────── -->
+<main>
+  <section class="hero" aria-label="Главный экран">
+
+    <img
+      class="hero-image"
+      src="assets/hero-window-garden.png"
+      alt=""
+      aria-hidden="true"
+      width="1672"
+      height="928"
+      decoding="async"
+      fetchpriority="high"
+    />
+
+    <!-- Atmospheric SVG Landscape -->
+    <svg class="hero-landscape" viewBox="0 0 1440 900" preserveAspectRatio="xMidYMid slice" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+      <defs>
+        <!-- Sky gradient -->
+        <linearGradient id="skyGrad" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%"   stop-color="#f5f8ee"/>
+          <stop offset="55%"  stop-color="#eef3e3"/>
+          <stop offset="100%" stop-color="#e4eccc"/>
+        </linearGradient>
+        <!-- Far hills gradient -->
+        <linearGradient id="hillFarGrad" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%"   stop-color="#c8d9a8" stop-opacity="0.55"/>
+          <stop offset="100%" stop-color="#b8cc94" stop-opacity="0.7"/>
+        </linearGradient>
+        <!-- Mid hills gradient -->
+        <linearGradient id="hillMidGrad" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%"   stop-color="#a8bc80" stop-opacity="0.7"/>
+          <stop offset="100%" stop-color="#94a86a" stop-opacity="0.85"/>
+        </linearGradient>
+        <!-- Near ground gradient -->
+        <linearGradient id="groundGrad" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%"   stop-color="#8a9e60"/>
+          <stop offset="100%" stop-color="#6e7e4a"/>
+        </linearGradient>
+        <!-- Mist layers -->
+        <linearGradient id="mistTop" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%"   stop-color="#fbfdf6" stop-opacity="0.85"/>
+          <stop offset="100%" stop-color="#fbfdf6" stop-opacity="0"/>
+        </linearGradient>
+        <linearGradient id="mistMid" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%"   stop-color="#eff3e7" stop-opacity="0.6"/>
+          <stop offset="100%" stop-color="#eff3e7" stop-opacity="0"/>
+        </linearGradient>
+        <linearGradient id="mistBottom" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%"   stop-color="#fbfdf6" stop-opacity="0"/>
+          <stop offset="100%" stop-color="#fbfdf6" stop-opacity="0.75"/>
+        </linearGradient>
+        <!-- Tree gradient -->
+        <linearGradient id="treeGrad" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%"   stop-color="#4a5e30"/>
+          <stop offset="100%" stop-color="#354420"/>
+        </linearGradient>
+        <!-- Blur filter for softness -->
+        <filter id="softBlur" x="-5%" y="-5%" width="110%" height="110%">
+          <feGaussianBlur stdDeviation="3"/>
+        </filter>
+        <filter id="midBlur">
+          <feGaussianBlur stdDeviation="1.5"/>
+        </filter>
+        <filter id="mistBlur">
+          <feGaussianBlur stdDeviation="12"/>
+        </filter>
+      </defs>
+
+      <!-- Sky -->
+      <rect width="1440" height="900" fill="url(#skyGrad)"/>
+
+      <!-- Distant haze band -->
+      <ellipse cx="720" cy="480" rx="900" ry="80" fill="#dce8c0" opacity="0.25" filter="url(#mistBlur)"/>
+
+      <!-- Far hills — very soft -->
+      <path d="M0 540 C120 480, 280 450, 420 470 C560 490, 640 460, 720 445 C800 430, 900 455, 1020 465 C1140 475, 1280 450, 1440 460 L1440 900 L0 900Z"
+            fill="url(#hillFarGrad)" filter="url(#softBlur)"/>
+
+      <!-- Mid hills -->
+      <path d="M0 580 C80 545, 200 520, 340 535 C440 548, 520 510, 620 520 C700 528, 780 500, 880 515 C980 530, 1100 505, 1200 520 C1300 535, 1380 515, 1440 522 L1440 900 L0 900Z"
+            fill="url(#hillMidGrad)" filter="url(#midBlur)"/>
+
+      <!-- Mist between hills — atmospheric layer -->
+      <rect x="0" y="490" width="1440" height="120" fill="url(#mistMid)" filter="url(#mistBlur)"/>
+
+      <!-- Near ground -->
+      <path d="M0 660 C180 630, 360 645, 540 638 C720 631, 900 650, 1080 640 C1200 633, 1320 645, 1440 638 L1440 900 L0 900Z"
+            fill="url(#groundGrad)"/>
+
+      <!-- Tree cluster — left, far -->
+      <g opacity="0.35" filter="url(#softBlur)">
+        <!-- Slim pine 1 -->
+        <path d="M180 530 L183 480 L186 530Z" fill="#4a5e30"/>
+        <path d="M183 480 C183 480 175 510 183 520 C191 510 183 480 183 480Z" fill="#3e5228"/>
+        <!-- Slim pine 2 -->
+        <path d="M210 545 L213 490 L216 545Z" fill="#4a5e30"/>
+        <path d="M213 490 C213 490 205 522 213 532 C221 522 213 490 213 490Z" fill="#3e5228"/>
+        <!-- Slim pine 3 -->
+        <path d="M150 538 L153 495 L156 538Z" fill="#56704a"/>
+        <path d="M153 495 C153 495 145 518 153 528 C161 518 153 495 153 495Z" fill="#4a6240"/>
+      </g>
+
+      <!-- Tree cluster — right, mid -->
+      <g opacity="0.45" filter="url(#softBlur)">
+        <path d="M1240 510 L1243 455 L1246 510Z" fill="#3e5228"/>
+        <path d="M1243 455 C1243 455 1234 490 1243 502 C1252 490 1243 455 1243 455Z" fill="#354420"/>
+        <path d="M1270 525 L1273 468 L1276 525Z" fill="#4a5e30"/>
+        <path d="M1273 468 C1273 468 1264 503 1273 515 C1282 503 1273 468 1273 468Z" fill="#3e5228"/>
+        <path d="M1300 518 L1303 462 L1306 518Z" fill="#56704a"/>
+        <path d="M1303 462 C1303 462 1294 497 1303 509 C1312 497 1303 462 1303 462Z" fill="#4a6240"/>
+      </g>
+
+      <!-- Bonsai-style tree — centre left -->
+      <g opacity="0.55" filter="url(#midBlur)">
+        <!-- Trunk -->
+        <path d="M540 680 Q536 640 530 600 Q527 575 532 555" stroke="#31200b" stroke-width="5" fill="none" stroke-linecap="round"/>
+        <!-- Main branches -->
+        <path d="M532 555 Q515 535 495 520" stroke="#31200b" stroke-width="3" fill="none" stroke-linecap="round"/>
+        <path d="M532 570 Q548 548 568 532" stroke="#31200b" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+        <path d="M533 560 Q530 540 526 520" stroke="#31200b" stroke-width="2" fill="none" stroke-linecap="round"/>
+        <!-- Canopy blobs -->
+        <ellipse cx="492" cy="515" rx="22" ry="16" fill="#4a5e30" opacity="0.75"/>
+        <ellipse cx="512" cy="505" rx="18" ry="13" fill="#567040" opacity="0.65"/>
+        <ellipse cx="568" cy="526" rx="20" ry="14" fill="#4a5e30" opacity="0.7"/>
+        <ellipse cx="548" cy="515" rx="16" ry="12" fill="#567040" opacity="0.6"/>
+        <ellipse cx="527" cy="510" rx="24" ry="17" fill="#3e5228" opacity="0.8"/>
+      </g>
+
+      <!-- Bonsai-style tree — centre right -->
+      <g opacity="0.5" filter="url(#midBlur)">
+        <path d="M900 685 Q905 642 912 602 Q916 577 910 556" stroke="#31200b" stroke-width="4.5" fill="none" stroke-linecap="round"/>
+        <path d="M910 556 Q928 534 948 518" stroke="#31200b" stroke-width="3" fill="none" stroke-linecap="round"/>
+        <path d="M910 572 Q894 548 876 534" stroke="#31200b" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+        <ellipse cx="950" cy="514" rx="20" ry="15" fill="#4a5e30" opacity="0.7"/>
+        <ellipse cx="932" cy="505" rx="17" ry="12" fill="#567040" opacity="0.6"/>
+        <ellipse cx="876" cy="529" rx="18" ry="13" fill="#4a5e30" opacity="0.65"/>
+        <ellipse cx="894" cy="520" rx="14" ry="11" fill="#567040" opacity="0.55"/>
+        <ellipse cx="912" cy="508" rx="22" ry="16" fill="#3e5228" opacity="0.75"/>
+      </g>
+
+      <!-- Foreground grass texture — very subtle -->
+      <path d="M0 700 Q360 680 720 695 Q1080 710 1440 698 L1440 900 L0 900Z" fill="#7a9052" opacity="0.25"/>
+
+      <!-- Top mist overlay -->
+      <rect x="0" y="0" width="1440" height="220" fill="url(#mistTop)"/>
+
+      <!-- Bottom vignette softness -->
+      <rect x="0" y="650" width="1440" height="250" fill="url(#mistBottom)"/>
+
+      <!-- Horizon mist band -->
+      <ellipse cx="720" cy="530" rx="800" ry="45" fill="#eef4e2" opacity="0.45" filter="url(#mistBlur)"/>
+    </svg>
+
+    <!-- Hero Content -->
+    <div class="hero-content">
+      <span class="hero-badge">
+        <span class="hero-badge-dot" aria-hidden="true"></span>
+        весенний сезон · советы по уходу
+      </span>
+
+      <h1 class="hero-title">Вырасти свой сад&nbsp;с&nbsp;умом</h1>
+
+      <p class="hero-subtitle">Всё о садовых растениях — от посева до урожая. Советы, каталог и уход для вашего идеального сада.</p>
+
+      <div class="hero-cta">
+        <button class="btn btn-filled btn-hero" id="btn-start">Начать выращивать</button>
+        <button class="btn btn-ghost btn-hero" id="btn-catalog">Смотреть каталог</button>
+      </div>
+    </div>
+
+    <!-- Trust Strip -->
+    <div class="trust-strip" role="complementary" aria-label="Категории растений">
+      <span class="trust-label">более 500 растений в каталоге</span>
+      <div class="trust-divider" aria-hidden="true"></div>
+      <div class="trust-categories">
+
+        <!-- Овощи -->
+        <div class="trust-item" data-tab="veggies" role="button" tabindex="0">
+          <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+            <path d="M8 2C8 2 4 5 4 9C4 11.21 5.79 13 8 13C10.21 13 12 11.21 12 9C12 5 8 2 8 2Z" fill="#4a5e30" opacity="0.8"/>
+            <path d="M8 13V15" stroke="#31200b" stroke-width="1.2" stroke-linecap="round"/>
+            <path d="M6 11C6 11 4.5 10.5 4 9" stroke="#4a5e30" stroke-width="0.8" stroke-linecap="round" opacity="0.6"/>
+          </svg>
+          овощи
+        </div>
+
+        <!-- Цветы -->
+        <div class="trust-item" data-tab="flowers" role="button" tabindex="0">
+          <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+            <circle cx="8" cy="8" r="2.2" fill="#6e7e4a"/>
+            <ellipse cx="8" cy="3.5" rx="1.8" ry="2.5" fill="#8a9e60" opacity="0.75"/>
+            <ellipse cx="8" cy="12.5" rx="1.8" ry="2.5" fill="#8a9e60" opacity="0.75"/>
+            <ellipse cx="3.5" cy="8" rx="2.5" ry="1.8" fill="#8a9e60" opacity="0.75"/>
+            <ellipse cx="12.5" cy="8" rx="2.5" ry="1.8" fill="#8a9e60" opacity="0.75"/>
+            <ellipse cx="4.9" cy="4.9" rx="1.8" ry="2.2" transform="rotate(-45 4.9 4.9)" fill="#a8bc80" opacity="0.6"/>
+            <ellipse cx="11.1" cy="4.9" rx="1.8" ry="2.2" transform="rotate(45 11.1 4.9)" fill="#a8bc80" opacity="0.6"/>
+          </svg>
+          цветы
+        </div>
+
+        <!-- Деревья -->
+        <div class="trust-item" data-tab="trees" role="button" tabindex="0">
+          <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+            <path d="M8 1.5 L11.5 8.5 L9 8.5 L11 13.5 L5 13.5 L7 8.5 L4.5 8.5Z" fill="#4a5e30" opacity="0.85"/>
+            <rect x="7.2" y="13" width="1.6" height="2" rx="0.5" fill="#31200b" opacity="0.7"/>
+          </svg>
+          деревья
+        </div>
+
+        <!-- Травы -->
+        <div class="trust-item" data-tab="herbs" role="button" tabindex="0">
+          <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+            <path d="M8 14 Q8 9 5 4" stroke="#4a5e30" stroke-width="1.3" fill="none" stroke-linecap="round"/>
+            <path d="M8 14 Q8 9 11 4" stroke="#567040" stroke-width="1.3" fill="none" stroke-linecap="round"/>
+            <path d="M8 14 Q8 10 8 3.5" stroke="#3e5228" stroke-width="1.3" fill="none" stroke-linecap="round"/>
+            <path d="M5 4 Q3 2 2.5 1" stroke="#4a5e30" stroke-width="1" fill="none" stroke-linecap="round" opacity="0.6"/>
+            <path d="M11 4 Q13 2 13.5 1" stroke="#567040" stroke-width="1" fill="none" stroke-linecap="round" opacity="0.6"/>
+          </svg>
+          травы
+        </div>
+
+        <!-- Кустарники -->
+        <div class="trust-item" data-tab="shrubs" role="button" tabindex="0">
+          <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+            <ellipse cx="8" cy="7" rx="5" ry="4" fill="#567040" opacity="0.7"/>
+            <ellipse cx="4.5" cy="9" rx="3" ry="2.5" fill="#4a5e30" opacity="0.75"/>
+            <ellipse cx="11.5" cy="9" rx="3" ry="2.5" fill="#4a5e30" opacity="0.75"/>
+            <rect x="6.5" y="10.5" width="3" height="3" rx="0.5" fill="#31200b" opacity="0.5"/>
+          </svg>
+          кустарники
+        </div>
+
+      </div>
+    </div>
+
+  </section>
+</main>
+
+
+
+
+<!-- ── Plant Selection Screen ──────────────────────────────────── -->
+<section id="screen-plants" aria-label="Выбор растений">
+  <div class="plants-header">
+    <h2 class="plants-title">Выбери свои первые растения</h2>
+    <span class="plants-subtitle">выбери растение, чтобы начать</span>
+  </div>
+
+  <div class="plants-grid">
+
+    <!-- Томат -->
+    <div class="plant-card" data-id="tomato">
+      <svg class="plant-icon" viewBox="0 0 56 56" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+        <circle cx="28" cy="32" r="16" fill="#4a5e30" opacity="0.75"/>
+        <circle cx="28" cy="32" r="11" fill="#567040" opacity="0.6"/>
+        <path d="M28 16 Q28 8 28 4" stroke="#354420" stroke-width="2" stroke-linecap="round"/>
+        <path d="M28 10 Q22 6 18 8" stroke="#4a5e30" stroke-width="1.5" stroke-linecap="round"/>
+        <path d="M28 10 Q34 6 38 8" stroke="#4a5e30" stroke-width="1.5" stroke-linecap="round"/>
+        <path d="M28 12 Q24 9 21 11" stroke="#567040" stroke-width="1.2" stroke-linecap="round"/>
+      </svg>
+      <span class="plant-name">томат</span>
+    </div>
+
+    <!-- Базилик -->
+    <div class="plant-card" data-id="basil">
+      <svg class="plant-icon" viewBox="0 0 56 56" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+        <path d="M28 48 Q28 36 28 24" stroke="#354420" stroke-width="2.5" stroke-linecap="round"/>
+        <ellipse cx="20" cy="28" rx="9" ry="6" transform="rotate(-20 20 28)" fill="#4a5e30" opacity="0.8"/>
+        <ellipse cx="36" cy="24" rx="9" ry="6" transform="rotate(20 36 24)" fill="#567040" opacity="0.75"/>
+        <ellipse cx="22" cy="18" rx="8" ry="5.5" transform="rotate(-10 22 18)" fill="#4a5e30" opacity="0.7"/>
+        <ellipse cx="34" cy="14" rx="7" ry="5" transform="rotate(15 34 14)" fill="#6e8050" opacity="0.65"/>
+        <ellipse cx="28" cy="10" rx="6" ry="4.5" fill="#4a5e30" opacity="0.8"/>
+      </svg>
+      <span class="plant-name">базилик</span>
+    </div>
+
+    <!-- Лаванда -->
+    <div class="plant-card" data-id="lavender">
+      <svg class="plant-icon" viewBox="0 0 56 56" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+        <path d="M22 48 Q22 32 22 18" stroke="#354420" stroke-width="2" stroke-linecap="round"/>
+        <path d="M28 48 Q28 30 28 14" stroke="#354420" stroke-width="2" stroke-linecap="round"/>
+        <path d="M34 48 Q34 32 34 18" stroke="#354420" stroke-width="2" stroke-linecap="round"/>
+        <ellipse cx="22" cy="14" rx="4" ry="9" fill="#7a8c60" opacity="0.7"/>
+        <ellipse cx="28" cy="10" rx="4" ry="9" fill="#6e7e54" opacity="0.75"/>
+        <ellipse cx="34" cy="14" rx="4" ry="9" fill="#7a8c60" opacity="0.7"/>
+        <ellipse cx="22" cy="14" rx="3" ry="7" fill="#8a9c70" opacity="0.5"/>
+        <ellipse cx="28" cy="10" rx="3" ry="7" fill="#8a9c70" opacity="0.55"/>
+        <ellipse cx="34" cy="14" rx="3" ry="7" fill="#8a9c70" opacity="0.5"/>
+      </svg>
+      <span class="plant-name">лаванда</span>
+    </div>
+
+    <!-- Мята -->
+    <div class="plant-card" data-id="mint">
+      <svg class="plant-icon" viewBox="0 0 56 56" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+        <path d="M28 48 Q26 38 24 28 Q22 18 24 10" stroke="#354420" stroke-width="2" stroke-linecap="round"/>
+        <ellipse cx="18" cy="22" rx="9" ry="5.5" transform="rotate(-30 18 22)" fill="#4a5e30" opacity="0.8"/>
+        <ellipse cx="37" cy="18" rx="9" ry="5.5" transform="rotate(25 37 18)" fill="#567040" opacity="0.75"/>
+        <ellipse cx="16" cy="32" rx="8" ry="5" transform="rotate(-15 16 32)" fill="#4a5e30" opacity="0.7"/>
+        <ellipse cx="38" cy="30" rx="8" ry="5" transform="rotate(20 38 30)" fill="#567040" opacity="0.7"/>
+        <ellipse cx="28" cy="38" rx="7" ry="4.5" fill="#4a5e30" opacity="0.65"/>
+        <!-- Vein lines -->
+        <path d="M18 22 Q20 20 22 22" stroke="#354420" stroke-width="0.8" opacity="0.4" stroke-linecap="round"/>
+        <path d="M37 18 Q35 16 33 18" stroke="#354420" stroke-width="0.8" opacity="0.4" stroke-linecap="round"/>
+      </svg>
+      <span class="plant-name">мята</span>
+    </div>
+
+    <!-- Розмарин -->
+    <div class="plant-card" data-id="rosemary">
+      <svg class="plant-icon" viewBox="0 0 56 56" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+        <path d="M28 50 Q28 36 28 22" stroke="#354420" stroke-width="2.5" stroke-linecap="round"/>
+        <path d="M28 40 Q22 36 16 34" stroke="#354420" stroke-width="1.5" stroke-linecap="round"/>
+        <path d="M28 34 Q34 30 40 28" stroke="#354420" stroke-width="1.5" stroke-linecap="round"/>
+        <path d="M28 28 Q22 24 17 22" stroke="#354420" stroke-width="1.5" stroke-linecap="round"/>
+        <path d="M28 22 Q33 18 38 16" stroke="#354420" stroke-width="1.5" stroke-linecap="round"/>
+        <!-- Needle leaves -->
+        <path d="M16 34 Q14 32 12 33" stroke="#4a5e30" stroke-width="1.2" stroke-linecap="round"/>
+        <path d="M40 28 Q42 26 44 27" stroke="#567040" stroke-width="1.2" stroke-linecap="round"/>
+        <path d="M17 22 Q15 20 13 21" stroke="#4a5e30" stroke-width="1.2" stroke-linecap="round"/>
+        <path d="M38 16 Q40 14 42 15" stroke="#567040" stroke-width="1.2" stroke-linecap="round"/>
+        <!-- Tip bud -->
+        <ellipse cx="28" cy="18" rx="3.5" ry="5" fill="#7a8c60" opacity="0.7"/>
+      </svg>
+      <span class="plant-name">розмарин</span>
+    </div>
+
+    <!-- Огурец -->
+    <div class="plant-card" data-id="cucumber">
+      <svg class="plant-icon" viewBox="0 0 56 56" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+        <ellipse cx="28" cy="32" rx="10" ry="16" fill="#4a5e30" opacity="0.75"/>
+        <ellipse cx="28" cy="32" rx="7" ry="12" fill="#567040" opacity="0.5"/>
+        <path d="M28 16 Q28 10 30 6" stroke="#354420" stroke-width="1.8" stroke-linecap="round"/>
+        <path d="M30 6 Q36 4 38 8" stroke="#4a5e30" stroke-width="1.5" stroke-linecap="round"/>
+        <path d="M28 20 Q20 14 16 16" stroke="#4a5e30" stroke-width="1.5" stroke-linecap="round"/>
+        <!-- Bumps -->
+        <circle cx="22" cy="28" r="1.5" fill="#354420" opacity="0.3"/>
+        <circle cx="34" cy="32" r="1.5" fill="#354420" opacity="0.3"/>
+        <circle cx="23" cy="38" r="1.5" fill="#354420" opacity="0.3"/>
+      </svg>
+      <span class="plant-name">огурец</span>
+    </div>
+
+    <!-- Подсолнух -->
+    <div class="plant-card" data-id="sunflower">
+      <svg class="plant-icon" viewBox="0 0 56 56" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+        <path d="M28 52 Q28 38 28 26" stroke="#354420" stroke-width="2.5" stroke-linecap="round"/>
+        <path d="M28 42 Q20 38 14 40" stroke="#354420" stroke-width="1.5" stroke-linecap="round"/>
+        <path d="M28 36 Q36 32 40 34" stroke="#354420" stroke-width="1.5" stroke-linecap="round"/>
+        <!-- Petals -->
+        <ellipse cx="28" cy="15" rx="4" ry="7" fill="#8a9e60" opacity="0.7"/>
+        <ellipse cx="28" cy="15" rx="4" ry="7" transform="rotate(45 28 24)" fill="#8a9e60" opacity="0.65"/>
+        <ellipse cx="28" cy="15" rx="4" ry="7" transform="rotate(90 28 24)" fill="#8a9e60" opacity="0.7"/>
+        <ellipse cx="28" cy="15" rx="4" ry="7" transform="rotate(135 28 24)" fill="#8a9e60" opacity="0.65"/>
+        <ellipse cx="28" cy="15" rx="4" ry="7" transform="rotate(-45 28 24)" fill="#8a9e60" opacity="0.6"/>
+        <ellipse cx="28" cy="15" rx="4" ry="7" transform="rotate(-90 28 24)" fill="#8a9e60" opacity="0.65"/>
+        <ellipse cx="28" cy="15" rx="4" ry="7" transform="rotate(-135 28 24)" fill="#8a9e60" opacity="0.6"/>
+        <!-- Center -->
+        <circle cx="28" cy="24" r="7" fill="#4a5e30" opacity="0.85"/>
+        <circle cx="28" cy="24" r="4.5" fill="#354420" opacity="0.7"/>
+      </svg>
+      <span class="plant-name">подсолнух</span>
+    </div>
+
+    <!-- Клубника -->
+    <div class="plant-card" data-id="strawberry">
+      <svg class="plant-icon" viewBox="0 0 56 56" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+        <!-- Berry -->
+        <path d="M28 16 Q18 18 16 28 Q15 38 28 46 Q41 38 40 28 Q38 18 28 16Z" fill="#4a5e30" opacity="0.75"/>
+        <path d="M28 16 Q20 20 19 29 Q19 37 28 43 Q37 37 37 29 Q36 20 28 16Z" fill="#567040" opacity="0.5"/>
+        <!-- Seeds -->
+        <circle cx="24" cy="30" r="1.2" fill="#354420" opacity="0.5"/>
+        <circle cx="32" cy="28" r="1.2" fill="#354420" opacity="0.5"/>
+        <circle cx="26" cy="38" r="1.2" fill="#354420" opacity="0.5"/>
+        <circle cx="30" cy="36" r="1.2" fill="#354420" opacity="0.45"/>
+        <!-- Leaves -->
+        <path d="M28 16 Q24 10 20 12" stroke="#354420" stroke-width="1.5" fill="none" stroke-linecap="round"/>
+        <path d="M28 16 Q32 10 36 12" stroke="#354420" stroke-width="1.5" fill="none" stroke-linecap="round"/>
+        <path d="M28 16 Q28 8 28 6" stroke="#354420" stroke-width="1.5" fill="none" stroke-linecap="round"/>
+        <ellipse cx="20" cy="11" rx="4" ry="3" transform="rotate(-20 20 11)" fill="#4a5e30" opacity="0.7"/>
+        <ellipse cx="36" cy="11" rx="4" ry="3" transform="rotate(20 36 11)" fill="#4a5e30" opacity="0.7"/>
+        <ellipse cx="28" cy="6" rx="3.5" ry="2.5" fill="#567040" opacity="0.65"/>
+      </svg>
+      <span class="plant-name">клубника</span>
+    </div>
+
+    <!-- Фиалка -->
+    <div class="plant-card" data-id="violet">
+      <svg class="plant-icon" viewBox="0 0 56 56" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+        <!-- 5 petals -->
+        <ellipse cx="28" cy="18" rx="5.5" ry="9" fill="#7a8c60" opacity="0.7"/>
+        <ellipse cx="28" cy="18" rx="5.5" ry="9" transform="rotate(72 28 28)" fill="#6e8054" opacity="0.65"/>
+        <ellipse cx="28" cy="18" rx="5.5" ry="9" transform="rotate(144 28 28)" fill="#7a8c60" opacity="0.7"/>
+        <ellipse cx="28" cy="18" rx="5.5" ry="9" transform="rotate(216 28 28)" fill="#6e8054" opacity="0.65"/>
+        <ellipse cx="28" cy="18" rx="5.5" ry="9" transform="rotate(288 28 28)" fill="#7a8c60" opacity="0.7"/>
+        <!-- Center -->
+        <circle cx="28" cy="28" r="5" fill="#567040" opacity="0.9"/>
+        <circle cx="28" cy="28" r="3" fill="#8a9e60" opacity="0.6"/>
+        <!-- Leaves -->
+        <ellipse cx="14" cy="42" rx="8" ry="5.5" transform="rotate(-20 14 42)" fill="#4a5e30" opacity="0.7"/>
+        <ellipse cx="42" cy="42" rx="8" ry="5.5" transform="rotate(20 42 42)" fill="#567040" opacity="0.7"/>
+        <ellipse cx="28" cy="46" rx="7" ry="5" fill="#4a5e30" opacity="0.65"/>
+      </svg>
+      <span class="plant-name">фиалка</span>
+    </div>
+
+    <!-- Алоэ -->
+    <div class="plant-card" data-id="aloe">
+      <svg class="plant-icon" viewBox="0 0 56 56" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+        <!-- Succulent leaves radiating from centre -->
+        <path d="M28 34 Q14 28 10 16 Q16 14 22 22 Q24 26 28 28Z" fill="#4a5e30" opacity="0.8"/>
+        <path d="M28 34 Q42 28 46 16 Q40 14 34 22 Q32 26 28 28Z" fill="#567040" opacity="0.75"/>
+        <path d="M28 34 Q18 44 14 52 Q20 54 26 44 Q27 40 28 36Z" fill="#4a5e30" opacity="0.75"/>
+        <path d="M28 34 Q38 44 42 52 Q36 54 30 44 Q29 40 28 36Z" fill="#567040" opacity="0.7"/>
+        <path d="M28 34 Q24 20 24 8 Q30 8 32 20 Q30 28 28 34Z" fill="#3e5228" opacity="0.85"/>
+        <!-- Spines -->
+        <path d="M10 16 L8 14" stroke="#354420" stroke-width="0.8" stroke-linecap="round" opacity="0.5"/>
+        <path d="M46 16 L48 14" stroke="#354420" stroke-width="0.8" stroke-linecap="round" opacity="0.5"/>
+        <path d="M14 52 L12 54" stroke="#354420" stroke-width="0.8" stroke-linecap="round" opacity="0.5"/>
+        <path d="M42 52 L44 54" stroke="#354420" stroke-width="0.8" stroke-linecap="round" opacity="0.5"/>
+        <!-- Center -->
+        <circle cx="28" cy="32" r="4" fill="#567040" opacity="0.9"/>
+      </svg>
+      <span class="plant-name">алоэ</span>
+    </div>
+
+  </div>
+
+  <button class="btn btn-ghost plants-back" id="btn-back">
+    <svg width="14" height="14" viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+      <path d="M9 2L4 7L9 12" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+    </svg>
+    Назад
+  </button>
+</section>
+
+
+
+<!-- ── Catalog Screen ──────────────────────────────────────────── -->
+<section id="screen-catalog" aria-label="Каталог растений">
+
+  <div class="catalog-header">
+    <h2 class="catalog-title">Каталог растений</h2>
+    <nav class="catalog-tabs" role="tablist" aria-label="Категории">
+      <button class="tab-btn active" role="tab" aria-selected="true"  data-tab="veggies">Овощи</button>
+      <button class="tab-btn"        role="tab" aria-selected="false" data-tab="flowers">Цветы</button>
+      <button class="tab-btn"        role="tab" aria-selected="false" data-tab="trees">Деревья</button>
+      <button class="tab-btn"        role="tab" aria-selected="false" data-tab="herbs">Травы</button>
+      <button class="tab-btn"        role="tab" aria-selected="false" data-tab="shrubs">Кустарники</button>
+    </nav>
+  </div>
+
+  <!-- Овощи -->
+  <div class="tab-panel active" id="tab-veggies">
+    <div class="catalog-grid">
+      <div class="catalog-card" data-name="Томат" data-fact="Томат — ягода, а не овощ. Он содержит ликопин, который становится более доступным для организма после термической обработки, поэтому томатная паста полезнее свежих томатов." data-tag="овощи">
+        <svg width="56" height="56" viewBox="0 0 56 56" fill="none"><circle cx="28" cy="32" r="16" fill="#4a5e30" opacity="0.75"/><circle cx="28" cy="32" r="11" fill="#567040" opacity="0.6"/><path d="M28 16 Q28 8 28 4" stroke="#354420" stroke-width="2" stroke-linecap="round"/><path d="M28 10 Q22 6 18 8" stroke="#4a5e30" stroke-width="1.5" stroke-linecap="round"/><path d="M28 10 Q34 6 38 8" stroke="#4a5e30" stroke-width="1.5" stroke-linecap="round"/><path d="M28 12 Q24 9 21 11" stroke="#567040" stroke-width="1.2" stroke-linecap="round"/></svg>
+        <span class="catalog-card-name">томат</span>
+      </div>
+      <div class="catalog-card" data-name="Огурец" data-fact="Огурец на 95% состоит из воды — это делает его одним из самых освежающих овощей. Внутри спелого плода температура на 20°C ниже, чем снаружи." data-tag="овощи">
+        <svg width="56" height="56" viewBox="0 0 56 56" fill="none"><ellipse cx="28" cy="32" rx="10" ry="16" fill="#4a5e30" opacity="0.75"/><ellipse cx="28" cy="32" rx="7" ry="12" fill="#567040" opacity="0.5"/><path d="M28 16 Q28 10 30 6" stroke="#354420" stroke-width="1.8" stroke-linecap="round"/><path d="M30 6 Q36 4 38 8" stroke="#4a5e30" stroke-width="1.5" stroke-linecap="round"/><path d="M28 20 Q20 14 16 16" stroke="#4a5e30" stroke-width="1.5" stroke-linecap="round"/><circle cx="22" cy="28" r="1.5" fill="#354420" opacity="0.3"/><circle cx="34" cy="32" r="1.5" fill="#354420" opacity="0.3"/><circle cx="23" cy="38" r="1.5" fill="#354420" opacity="0.3"/></svg>
+        <span class="catalog-card-name">огурец</span>
+      </div>
+      <div class="catalog-card" data-name="Арбуз" data-fact="Арбуз на 92% состоит из воды — это делает его идеальным летним лакомством и натуральным источником увлажнения." data-tag="овощи" data-shop-id="watermelon" data-locked-msg="🔒 Семена арбуза можно купить в Магазине за 🪙 50 монет">
+        <svg width="56" height="56" viewBox="0 0 56 56" fill="none">
+          <!-- whole watermelon -->
+          <circle cx="28" cy="30" r="18" fill="#3a7a28"/>
+          <path d="M10 30 Q10 12 28 12 Q46 12 46 30" fill="#4a9030"/>
+          <path d="M12 26 Q14 16 22 12" stroke="#2d5a1e" stroke-width="1.5" stroke-linecap="round" opacity="0.5"/>
+          <path d="M18 11 Q26 8 34 11" stroke="#2d5a1e" stroke-width="1.5" stroke-linecap="round" opacity="0.5"/>
+          <path d="M34 12 Q42 16 44 24" stroke="#2d5a1e" stroke-width="1.5" stroke-linecap="round" opacity="0.5"/>
+          <!-- red flesh slice hint at bottom -->
+          <ellipse cx="28" cy="38" rx="14" ry="9" fill="#e74c3c" opacity="0.85"/>
+          <ellipse cx="28" cy="38" rx="10" ry="6" fill="#ff6b6b" opacity="0.5"/>
+          <circle cx="23" cy="37" r="1.2" fill="#1a1a1a" opacity="0.7"/>
+          <circle cx="29" cy="40" r="1.2" fill="#1a1a1a" opacity="0.7"/>
+          <circle cx="34" cy="36" r="1.2" fill="#1a1a1a" opacity="0.7"/>
+          <!-- rind border -->
+          <ellipse cx="28" cy="38" rx="14" ry="9" fill="none" stroke="#2d6e1e" stroke-width="2"/>
+        </svg>
+        <span class="catalog-card-name">арбуз</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Цветы -->
+  <div class="tab-panel" id="tab-flowers">
+    <div class="catalog-grid">
+      <div class="catalog-card" data-name="Лаванда" data-fact="Аромат лаванды снижает уровень кортизола — гормона стресса. Древние римляне добавляли её в ванны, отсюда и происходит латинское слово lavare — мыть." data-tag="цветы">
+        <svg width="56" height="56" viewBox="0 0 56 56" fill="none"><path d="M22 48 Q22 32 22 18" stroke="#354420" stroke-width="2" stroke-linecap="round"/><path d="M28 48 Q28 30 28 14" stroke="#354420" stroke-width="2" stroke-linecap="round"/><path d="M34 48 Q34 32 34 18" stroke="#354420" stroke-width="2" stroke-linecap="round"/><ellipse cx="22" cy="14" rx="4" ry="9" fill="#7a8c60" opacity="0.7"/><ellipse cx="28" cy="10" rx="4" ry="9" fill="#6e7e54" opacity="0.75"/><ellipse cx="34" cy="14" rx="4" ry="9" fill="#7a8c60" opacity="0.7"/><ellipse cx="22" cy="14" rx="3" ry="7" fill="#8a9c70" opacity="0.5"/><ellipse cx="28" cy="10" rx="3" ry="7" fill="#8a9c70" opacity="0.55"/><ellipse cx="34" cy="14" rx="3" ry="7" fill="#8a9c70" opacity="0.5"/></svg>
+        <span class="catalog-card-name">лаванда</span>
+      </div>
+      <div class="catalog-card" data-name="Фиалка" data-fact="Фиалки — одни из немногих цветов, которые цветут при низких температурах. В средние века их использовали как лекарство от головной боли и бессонницы." data-tag="цветы">
+        <svg width="56" height="56" viewBox="0 0 56 56" fill="none"><ellipse cx="28" cy="18" rx="5.5" ry="9" fill="#7a8c60" opacity="0.7"/><ellipse cx="28" cy="18" rx="5.5" ry="9" transform="rotate(72 28 28)" fill="#6e8054" opacity="0.65"/><ellipse cx="28" cy="18" rx="5.5" ry="9" transform="rotate(144 28 28)" fill="#7a8c60" opacity="0.7"/><ellipse cx="28" cy="18" rx="5.5" ry="9" transform="rotate(216 28 28)" fill="#6e8054" opacity="0.65"/><ellipse cx="28" cy="18" rx="5.5" ry="9" transform="rotate(288 28 28)" fill="#7a8c60" opacity="0.7"/><circle cx="28" cy="28" r="5" fill="#567040" opacity="0.9"/><circle cx="28" cy="28" r="3" fill="#8a9e60" opacity="0.6"/><ellipse cx="14" cy="42" rx="8" ry="5.5" transform="rotate(-20 14 42)" fill="#4a5e30" opacity="0.7"/><ellipse cx="42" cy="42" rx="8" ry="5.5" transform="rotate(20 42 42)" fill="#567040" opacity="0.7"/><ellipse cx="28" cy="46" rx="7" ry="5" fill="#4a5e30" opacity="0.65"/></svg>
+        <span class="catalog-card-name">фиалка</span>
+      </div>
+      <div class="catalog-card" data-name="Подсолнух" data-fact="Молодые подсолнухи следят за солнцем в течение дня — это явление называется гелиотропизм. Взрослые растения фиксируются и всегда смотрят на восток, привлекая утренних опылителей." data-tag="цветы">
+        <svg width="56" height="56" viewBox="0 0 56 56" fill="none"><path d="M28 52 Q28 38 28 26" stroke="#354420" stroke-width="2.5" stroke-linecap="round"/><path d="M28 42 Q20 38 14 40" stroke="#354420" stroke-width="1.5" stroke-linecap="round"/><path d="M28 36 Q36 32 40 34" stroke="#354420" stroke-width="1.5" stroke-linecap="round"/><ellipse cx="28" cy="15" rx="4" ry="7" fill="#8a9e60" opacity="0.7"/><ellipse cx="28" cy="15" rx="4" ry="7" transform="rotate(45 28 24)" fill="#8a9e60" opacity="0.65"/><ellipse cx="28" cy="15" rx="4" ry="7" transform="rotate(90 28 24)" fill="#8a9e60" opacity="0.7"/><ellipse cx="28" cy="15" rx="4" ry="7" transform="rotate(135 28 24)" fill="#8a9e60" opacity="0.65"/><ellipse cx="28" cy="15" rx="4" ry="7" transform="rotate(-45 28 24)" fill="#8a9e60" opacity="0.6"/><ellipse cx="28" cy="15" rx="4" ry="7" transform="rotate(-90 28 24)" fill="#8a9e60" opacity="0.65"/><ellipse cx="28" cy="15" rx="4" ry="7" transform="rotate(-135 28 24)" fill="#8a9e60" opacity="0.6"/><circle cx="28" cy="24" r="7" fill="#4a5e30" opacity="0.85"/><circle cx="28" cy="24" r="4.5" fill="#354420" opacity="0.7"/></svg>
+        <span class="catalog-card-name">подсолнух</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Деревья -->
+  <div class="tab-panel" id="tab-trees">
+    <div class="catalog-grid">
+      <div class="catalog-card" data-name="Дуб" data-fact="Дуб может жить более 1000 лет — некоторые деревья помнят времена средневековых рыцарей." data-tag="деревья" data-shop-id="oak" data-locked-msg="🔒 Семена дуба можно купить в Магазине за 💎 7 гемов">
+        <svg width="56" height="56" viewBox="0 0 56 56" fill="none">
+          <!-- trunk -->
+          <rect x="24" y="36" width="8" height="16" rx="3" fill="#7b5e3a"/>
+          <rect x="25" y="36" width="3" height="16" rx="1.5" fill="#9a7a50" opacity="0.4"/>
+          <!-- foliage clusters -->
+          <circle cx="28" cy="28" r="14" fill="#4a8030"/>
+          <circle cx="18" cy="26" r="10" fill="#3a7028"/>
+          <circle cx="38" cy="26" r="10" fill="#3a7028"/>
+          <circle cx="28" cy="18" r="11" fill="#5a9040"/>
+          <circle cx="20" cy="20" r="8"  fill="#4a8030" opacity="0.8"/>
+          <circle cx="36" cy="20" r="8"  fill="#4a8030" opacity="0.8"/>
+          <!-- acorn detail -->
+          <ellipse cx="28" cy="10" rx="5" ry="3.5" fill="#7b5e3a"/>
+          <ellipse cx="28" cy="10" rx="4" ry="2"   fill="#c8843a" opacity="0.9"/>
+          <rect x="26.5" y="6" width="3" height="5" rx="1.5" fill="#5a3d1e"/>
+          <!-- leaf vein hints -->
+          <path d="M22 26 Q25 22 28 26 Q31 22 34 26" stroke="#2d5a1e" stroke-width="0.7" fill="none" opacity="0.4" stroke-linecap="round"/>
+          <path d="M18 30 Q22 26 26 30" stroke="#2d5a1e" stroke-width="0.7" fill="none" opacity="0.35" stroke-linecap="round"/>
+        </svg>
+        <span class="catalog-card-name">дуб</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Травы -->
+  <div class="tab-panel" id="tab-herbs">
+    <div class="catalog-grid">
+      <div class="catalog-card" data-name="Базилик" data-fact="Базилик — священное растение в Индии, где его называют «тулси» и считают воплощением богини. Он содержит эвгенол — то же вещество, что и в гвоздике, и обладает природными антисептическими свойствами." data-tag="травы">
+        <svg width="56" height="56" viewBox="0 0 56 56" fill="none"><path d="M28 48 Q28 36 28 24" stroke="#354420" stroke-width="2.5" stroke-linecap="round"/><ellipse cx="20" cy="28" rx="9" ry="6" transform="rotate(-20 20 28)" fill="#4a5e30" opacity="0.8"/><ellipse cx="36" cy="24" rx="9" ry="6" transform="rotate(20 36 24)" fill="#567040" opacity="0.75"/><ellipse cx="22" cy="18" rx="8" ry="5.5" transform="rotate(-10 22 18)" fill="#4a5e30" opacity="0.7"/><ellipse cx="34" cy="14" rx="7" ry="5" transform="rotate(15 34 14)" fill="#6e8050" opacity="0.65"/><ellipse cx="28" cy="10" rx="6" ry="4.5" fill="#4a5e30" opacity="0.8"/></svg>
+        <span class="catalog-card-name">базилик</span>
+      </div>
+      <div class="catalog-card" data-name="Мята" data-fact="Мята — один из старейших лекарственных препаратов в истории. Её листья находили в египетских гробницах возрастом более 3000 лет. Запах мяты повышает концентрацию внимания." data-tag="травы">
+        <svg width="56" height="56" viewBox="0 0 56 56" fill="none"><path d="M28 48 Q26 38 24 28 Q22 18 24 10" stroke="#354420" stroke-width="2" stroke-linecap="round"/><ellipse cx="18" cy="22" rx="9" ry="5.5" transform="rotate(-30 18 22)" fill="#4a5e30" opacity="0.8"/><ellipse cx="37" cy="18" rx="9" ry="5.5" transform="rotate(25 37 18)" fill="#567040" opacity="0.75"/><ellipse cx="16" cy="32" rx="8" ry="5" transform="rotate(-15 16 32)" fill="#4a5e30" opacity="0.7"/><ellipse cx="38" cy="30" rx="8" ry="5" transform="rotate(20 38 30)" fill="#567040" opacity="0.7"/><ellipse cx="28" cy="38" rx="7" ry="4.5" fill="#4a5e30" opacity="0.65"/></svg>
+        <span class="catalog-card-name">мята</span>
+      </div>
+      <div class="catalog-card" data-name="Розмарин" data-fact="Розмарин улучшает память — вдыхание его аромата повышает точность запоминания на 75%. В Древней Греции студенты вплетали веточки розмарина в волосы перед экзаменами." data-tag="травы">
+        <svg width="56" height="56" viewBox="0 0 56 56" fill="none"><path d="M28 50 Q28 36 28 22" stroke="#354420" stroke-width="2.5" stroke-linecap="round"/><path d="M28 40 Q22 36 16 34" stroke="#354420" stroke-width="1.5" stroke-linecap="round"/><path d="M28 34 Q34 30 40 28" stroke="#354420" stroke-width="1.5" stroke-linecap="round"/><path d="M28 28 Q22 24 17 22" stroke="#354420" stroke-width="1.5" stroke-linecap="round"/><path d="M28 22 Q33 18 38 16" stroke="#354420" stroke-width="1.5" stroke-linecap="round"/><path d="M16 34 Q14 32 12 33" stroke="#4a5e30" stroke-width="1.2" stroke-linecap="round"/><path d="M40 28 Q42 26 44 27" stroke="#567040" stroke-width="1.2" stroke-linecap="round"/><path d="M17 22 Q15 20 13 21" stroke="#4a5e30" stroke-width="1.2" stroke-linecap="round"/><path d="M38 16 Q40 14 42 15" stroke="#567040" stroke-width="1.2" stroke-linecap="round"/><ellipse cx="28" cy="18" rx="3.5" ry="5" fill="#7a8c60" opacity="0.7"/></svg>
+        <span class="catalog-card-name">розмарин</span>
+      </div>
+      <div class="catalog-card" data-name="Кресс-салат" data-fact="Кресс-салат относится к самым быстрорастущим съедобным растениям. Молодые побеги имеют свежий перечный вкус и богаты витаминами C и K." data-tag="микрозелень">
+        <svg width="56" height="56" viewBox="0 0 56 56" fill="none">
+          <path d="M7 52 Q8 34 9 20 M15 52 Q14 30 17 16 M23 52 Q22 32 24 13 M31 52 Q33 31 32 17 M39 52 Q38 33 41 15 M48 52 Q46 35 48 21" stroke="#3a6b2e" stroke-width="1.5" stroke-linecap="round"/>
+          <ellipse cx="8" cy="19" rx="6" ry="3.5" transform="rotate(-18 8 19)" fill="#5e9a4a"/>
+          <ellipse cx="17" cy="15" rx="6" ry="3.5" transform="rotate(18 17 15)" fill="#72b35a"/>
+          <ellipse cx="24" cy="12" rx="6" ry="3.5" transform="rotate(-15 24 12)" fill="#5e9a4a"/>
+          <ellipse cx="32" cy="16" rx="6" ry="3.5" transform="rotate(16 32 16)" fill="#6eaa56"/>
+          <ellipse cx="41" cy="14" rx="6" ry="3.5" transform="rotate(-16 41 14)" fill="#72b35a"/>
+          <ellipse cx="48" cy="20" rx="5.5" ry="3.2" transform="rotate(16 48 20)" fill="#5e9a4a"/>
+        </svg>
+        <span class="catalog-card-name">кресс-салат</span>
+      </div>
+      <div class="catalog-card" data-name="Микрозелень редиса" data-fact="Молодые ростки редиса сохраняют лёгкую остроту корнеплода. Они быстро растут, содержат витамин C и хорошо подходят для салатов." data-tag="микрозелень">
+        <svg width="56" height="56" viewBox="0 0 56 56" fill="none">
+          <path d="M7 52Q8 34 9 20M15 52Q14 30 17 16M23 52Q22 32 24 13M31 52Q33 31 32 17M39 52Q38 33 41 15M48 52Q46 35 48 21" stroke="#557a35" stroke-width="1.5" stroke-linecap="round"/>
+          <ellipse cx="8" cy="19" rx="6" ry="3.5" transform="rotate(-18 8 19)" fill="#78a84f"/><ellipse cx="17" cy="15" rx="6" ry="3.5" transform="rotate(18 17 15)" fill="#91bd62"/><ellipse cx="24" cy="12" rx="6" ry="3.5" transform="rotate(-15 24 12)" fill="#8bb85c"/><ellipse cx="32" cy="16" rx="6" ry="3.5" transform="rotate(16 32 16)" fill="#78a84f"/><ellipse cx="41" cy="14" rx="6" ry="3.5" transform="rotate(-16 41 14)" fill="#91bd62"/><circle cx="17" cy="21" r="2" fill="#b45768" opacity="0.8"/>
+        </svg>
+        <span class="catalog-card-name">редис</span>
+      </div>
+      <div class="catalog-card" data-name="Микрозелень брокколи" data-fact="Микрозелень брокколи имеет мягкий капустный вкус. Её плотные зелёные побеги содержат витамин K и природные антиоксиданты." data-tag="микрозелень">
+        <svg width="56" height="56" viewBox="0 0 56 56" fill="none">
+          <path d="M8 52Q9 34 10 23M18 52Q17 29 20 16M28 52Q29 31 28 18M38 52Q36 29 39 15M48 52Q47 34 48 21" stroke="#315f3c" stroke-width="1.7" stroke-linecap="round"/>
+          <circle cx="9" cy="20" r="6" fill="#548d58"/><circle cx="19" cy="15" r="7" fill="#67a06a"/><circle cx="29" cy="18" r="6.5" fill="#477f50"/><circle cx="39" cy="14" r="7" fill="#67a06a"/><circle cx="48" cy="20" r="6" fill="#548d58"/>
+        </svg>
+        <span class="catalog-card-name">брокколи</span>
+      </div>
+      <div class="catalog-card" data-name="Шисо Бриттон" data-fact="Шисо Бриттон сочетает зелёную верхнюю сторону листа с пурпурной нижней. У него мятно-базиликовый аромат с оттенками пряностей, поэтому его используют как выразительный гарнир." data-tag="премиальная микрозелень">
+        <svg width="56" height="56" viewBox="0 0 56 56" fill="none">
+          <path d="M10 52Q12 34 13 25M28 52Q26 27 29 17M46 52Q44 35 46 26" stroke="#71364f" stroke-width="2" stroke-linecap="round"/>
+          <path d="M13 26L4 23L8 19L3 16L10 14L8 9L15 12L19 6L22 13L29 12L25 18L30 22L22 24Z" fill="#793f67"/><path d="M29 18L20 15L24 11L19 8L26 6L24 2L31 4L35 0L38 7L45 6L41 12L46 16L38 17Z" fill="#4e7c52"/><path d="M46 27L37 24L41 20L36 17L43 15L41 10L48 13L52 7L55 14L56 14L54 21L56 24L54 26Z" fill="#793f67"/>
+        </svg>
+        <span class="catalog-card-name">шисо Бриттон</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Кустарники -->
+  <div class="tab-panel" id="tab-shrubs">
+    <div class="catalog-grid">
+      <div class="catalog-card" data-name="Клубника" data-fact="Клубника — единственный фрукт, у которого семена снаружи, а не внутри. На одной ягоде в среднем 200 крошечных семян, и технически каждое из них — отдельный плод." data-tag="кустарники">
+        <svg width="56" height="56" viewBox="0 0 56 56" fill="none"><path d="M28 16 Q18 18 16 28 Q15 38 28 46 Q41 38 40 28 Q38 18 28 16Z" fill="#4a5e30" opacity="0.75"/><path d="M28 16 Q20 20 19 29 Q19 37 28 43 Q37 37 37 29 Q36 20 28 16Z" fill="#567040" opacity="0.5"/><circle cx="24" cy="30" r="1.2" fill="#354420" opacity="0.5"/><circle cx="32" cy="28" r="1.2" fill="#354420" opacity="0.5"/><circle cx="26" cy="38" r="1.2" fill="#354420" opacity="0.5"/><circle cx="30" cy="36" r="1.2" fill="#354420" opacity="0.45"/><path d="M28 16 Q24 10 20 12" stroke="#354420" stroke-width="1.5" fill="none" stroke-linecap="round"/><path d="M28 16 Q32 10 36 12" stroke="#354420" stroke-width="1.5" fill="none" stroke-linecap="round"/><path d="M28 16 Q28 8 28 6" stroke="#354420" stroke-width="1.5" fill="none" stroke-linecap="round"/><ellipse cx="20" cy="11" rx="4" ry="3" transform="rotate(-20 20 11)" fill="#4a5e30" opacity="0.7"/><ellipse cx="36" cy="11" rx="4" ry="3" transform="rotate(20 36 11)" fill="#4a5e30" opacity="0.7"/><ellipse cx="28" cy="6" rx="3.5" ry="2.5" fill="#567040" opacity="0.65"/></svg>
+        <span class="catalog-card-name">клубника</span>
+      </div>
+    </div>
+  </div>
+
+  <button class="btn btn-ghost catalog-back" id="btn-back-catalog">
+    <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true">
+      <path d="M9 2L4 7L9 12" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+    </svg>
+    Назад
+  </button>
+
+</section>
+
+<!-- ── Modal ───────────────────────────────────────────────────── -->
+<div class="modal-overlay" id="modal-overlay" role="dialog" aria-modal="true" aria-labelledby="modal-plant-name">
+  <div class="modal-box">
+    <button class="modal-close" id="modal-close" aria-label="Закрыть">✕</button>
+    <svg class="modal-icon" id="modal-icon" width="72" height="72" viewBox="0 0 56 56" fill="none"></svg>
+    <h3 class="modal-name" id="modal-plant-name"></h3>
+    <p class="modal-fact" id="modal-plant-fact"></p>
+    <span class="modal-tag" id="modal-plant-tag"></span>
+  </div>
+</div>
+
+
+
+
+
+
+
+<!-- ── Planting Screen ─────────────────────────────────────────── -->
+<section id="screen-planting" aria-label="Посадка растения">
+  <h2 class="planting-title">Посади растение</h2>
+  <p class="planting-hint">перетащи пакетик семян к горшку</p>
+
+  <div class="planting-stage">
+
+    <!-- Pot -->
+    <div id="pot-zone">
+      <!-- Seeds falling overlay -->
+      <div id="seeds-anim">
+        <div class="seed-dot"></div>
+        <div class="seed-dot"></div>
+        <div class="seed-dot"></div>
+        <div class="seed-dot"></div>
+        <div class="seed-dot"></div>
+        <div class="seed-dot"></div>
+      </div>
+      <!-- Selected plant: its own SVG grows directly from the soil -->
+      <div id="plant-final-anim">
+        <svg id="plant-final-svg" viewBox="0 0 56 56" xmlns="http://www.w3.org/2000/svg"></svg>
+      </div>
+      <!-- Pot SVG: matches reference — terracotta, classic tapered shape, simple rim -->
+      <svg id="pot-svg" width="360" height="400" viewBox="0 0 360 400" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+          <filter id="potSoftShadow" x="-30%" y="-10%" width="160%" height="130%">
+            <feDropShadow dx="0" dy="8" stdDeviation="8" flood-color="#0a1d08" flood-opacity="0.14"/>
+          </filter>
+        </defs>
+
+        <!-- Soft ground shadow under the pot -->
+        <ellipse cx="180" cy="372" rx="110" ry="14" fill="#0a1d08" opacity="0.10"/>
+
+        <g filter="url(#potSoftShadow)">
+          <!-- Pot body: wide at rim, tapers to a narrower flat base, single terracotta tone -->
+          <path d="M64 118
+                   L92 350
+                   C94 360, 130 366, 180 366
+                   C230 366, 266 360, 268 350
+                   L296 118
+                   Z"
+                fill="#dd7536"/>
+
+          <!-- Rim band: simple flat ellipse-band, no double outline -->
+          <path d="M64 118
+                   C64 102, 116 90, 180 90
+                   C244 90, 296 102, 296 118
+                   C296 134, 244 146, 180 146
+                   C116 146, 64 134, 64 118Z"
+                fill="#e2854a"/>
+
+          <!-- Soil: single dark ellipse sitting inside the rim opening -->
+          <ellipse id="pot-soil" cx="180" cy="116" rx="92" ry="22" fill="#3e2a1c"/>
+        </g>
+      </svg>
+
+      <!-- Low rectangular tray used only for microgreens -->
+      <svg id="microgreen-pot-svg" width="420" height="210" viewBox="0 0 360 180" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+          <filter id="microgreenSoftShadow" x="-20%" y="-20%" width="140%" height="150%">
+            <feDropShadow dx="0" dy="7" stdDeviation="7" flood-color="#0a1d08" flood-opacity="0.13"/>
+          </filter>
+        </defs>
+        <ellipse cx="180" cy="164" rx="138" ry="10" fill="#0a1d08" opacity="0.09"/>
+        <g filter="url(#microgreenSoftShadow)">
+          <path d="M34 78 H326 L306 148 Q304 156 294 156 H66 Q56 156 54 148Z" fill="#c86f38"/>
+          <rect x="22" y="56" width="316" height="48" rx="18" fill="#df8250"/>
+          <rect id="microgreen-soil" x="42" y="67" width="276" height="25" rx="12.5" fill="#3e2a1c"/>
+          <path d="M46 103 H314" stroke="#b95f30" stroke-width="3" opacity="0.55"/>
+        </g>
+      </svg>
+    </div>
+
+    <!-- Seed bag -->
+    <div id="seed-bag">
+      <svg width="195" height="255" viewBox="0 0 130 170" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <!-- Bag body -->
+        <rect x="18" y="38" width="94" height="118" rx="12" fill="#eff2e8"/>
+        <rect x="18" y="38" width="94" height="118" rx="12" stroke="#c5ccb6" stroke-width="1.5"/>
+        <!-- Bag top fold -->
+        <path d="M18 50 L18 38 Q18 26 30 26 L100 26 Q112 26 112 38 L112 50Z" fill="#e0e5d5"/>
+        <path d="M18 50 L18 38 Q18 26 30 26 L100 26 Q112 26 112 38 L112 50Z" stroke="#c5ccb6" stroke-width="1.5"/>
+        <!-- Clip / tie -->
+        <rect x="30" y="46" width="70" height="10" rx="5" fill="#c5ccb6"/>
+        <!-- Plant illustration on bag. Its paths are replaced with the
+             selected plant's own artwork when the planting screen opens. -->
+        <circle cx="65" cy="105" r="28" fill="#d7e8b5" opacity="0.6"/>
+        <svg id="seed-plant-svg" x="37" y="77" width="56" height="56" viewBox="0 0 56 56"></svg>
+        <!-- Invisible anchor at the packet opening, used to start the seed stream. -->
+        <circle id="seed-pour-point" cx="65" cy="28" r="1" fill="transparent"/>
+        <!-- Label text area -->
+        <rect x="28" y="136" width="74" height="14" rx="7" fill="#d7e8b5"/>
+        <text id="seed-label" x="65" y="147" font-family="'JetBrains Mono', monospace" font-size="10" fill="#0a1d08" text-anchor="middle" letter-spacing="0.5">растение</text>
+        <!-- Small seeds visible through bag bottom -->
+        <circle cx="52" cy="118" r="2.5" fill="#9a7858" opacity="0.4"/>
+        <circle cx="65" cy="122" r="2.5" fill="#8a6848" opacity="0.4"/>
+        <circle cx="78" cy="116" r="2.5" fill="#9a7858" opacity="0.4"/>
+      </svg>
+    </div>
+
+  </div>
+
+  <!-- Success message -->
+  <div id="planting-success">
+    <span class="success-label">отлично!</span>
+    <p class="success-title">Семена посеяны. Теперь поливай и жди 🌱</p>
+    <div class="success-actions">
+      <button class="btn btn-filled" id="btn-plant-more">Посадить ещё</button>
+      <button class="btn btn-ghost" id="btn-go-garden">Вернуться в сад</button>
+    </div>
+  </div>
+
+  <button class="btn btn-ghost" id="btn-back-planting" style="margin-top: var(--sp-40)">
+    <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true">
+      <path d="M9 2L4 7L9 12" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+    </svg>
+    <span id="back-planting-label">Назад к растениям</span>
+  </button>
+</section>
+
+
+
+<!-- ── "Мой сад" Screen ──────────────────────────────────────── -->
+<section id="screen-garden" aria-label="Мой сад">
+  <div class="weather-atmosphere" id="weather-atmosphere" aria-hidden="true">
+    <div class="weather-sun-glow"></div>
+    <div class="weather-cloud weather-cloud--one"></div>
+    <div class="weather-cloud weather-cloud--two"></div>
+    <div class="weather-rain" id="weather-rain"></div>
+    <div class="weather-rainbow-arc"></div>
+  </div>
+
+  <div class="garden-toolbar">
+    <div class="garden-view-tabs" role="tablist" aria-label="Разделы сада">
+      <button class="garden-view-tab active" data-garden-view="vegetables" role="tab" aria-selected="true">Овощи</button>
+      <button class="garden-view-tab" data-garden-view="flowers" role="tab" aria-selected="false">Цветы</button>
+      <button class="garden-view-tab" data-garden-view="trees" role="tab" aria-selected="false">Деревья</button>
+      <button class="garden-view-tab" data-garden-view="shrubs" role="tab" aria-selected="false">Кустарники</button>
+      <button class="garden-view-tab" data-garden-view="herbs" role="tab" aria-selected="false">Травы</button>
+      <button class="garden-view-tab" data-garden-view="microgreens" role="tab" aria-selected="false">Микрозелень</button>
+    </div>
+
+    <div class="garden-toolbar-actions">
+      <button class="warehouse-button" id="warehouse-button" type="button" aria-haspopup="dialog">
+        <span class="warehouse-button-icon" aria-hidden="true">▦</span>
+        <span>Склад</span>
+        <strong id="warehouse-count">0</strong>
+      </button>
+      <div class="weather-control">
+      <button class="weather-widget" id="weather-widget" type="button" aria-expanded="false" aria-controls="weather-details">
+        <span class="weather-widget-icon" id="weather-widget-icon" aria-hidden="true">☀</span>
+        <span class="weather-widget-copy">
+          <strong id="weather-widget-name">Ясно</strong>
+          <span id="weather-widget-status">Следующая погода скоро</span>
+        </span>
+      </button>
+      <div class="weather-details" id="weather-details" hidden>
+        <strong id="weather-details-title">Ясная погода</strong>
+        <p id="weather-details-description">Растения растут и ждут обычного ручного полива.</p>
+        <span id="weather-details-next">До смены погоды: 00:00</span>
+      </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="weather-toast" id="weather-toast" role="status" aria-live="polite"></div>
+
+  <div class="weather-intro" id="weather-intro" hidden>
+    <div class="weather-intro-card" role="dialog" aria-modal="true" aria-labelledby="weather-intro-title">
+      <span class="weather-intro-icon" aria-hidden="true">☂</span>
+      <h2 id="weather-intro-title">В саду появилась погода</h2>
+      <p>Дождь поливает готовые растения, солнце ускоряет таймеры, а редкая радуга увеличивает награду.</p>
+      <button class="btn btn-filled" id="weather-intro-close" type="button">Понятно</button>
+    </div>
+  </div>
+
+  <div class="garden-view-panel active" id="garden-view-panel" role="tabpanel">
+    <p id="garden-empty">В этом разделе пока пусто. Посади первое растение.</p>
+    <div id="garden-grid"></div>
+    <div class="garden-actions">
+      <button class="btn btn-ghost" id="btn-garden-plant-more">Посадить ещё</button>
+    </div>
+  </div>
+
+  <div class="garden-view-panel" id="microgreens-view-panel" role="tabpanel">
+    <p class="microgreens-intro">Быстрый урожай в компактных лотках. Полив доступен каждую минуту.</p>
+    <div id="microgreens-grid"></div>
+    <div class="garden-actions" id="microgreen-actions"></div>
+  </div>
+
+</section>
+
+<!-- Kept outside the garden screen so weather layout and clipping rules
+     cannot change the fixed dialog geometry. -->
+<div class="warehouse-modal" id="warehouse-modal" hidden>
+  <div class="warehouse-backdrop" data-warehouse-close></div>
+  <div class="warehouse-sheet" role="dialog" aria-modal="true" aria-labelledby="warehouse-title">
+    <div class="warehouse-heading">
+      <div>
+        <span>Собранный урожай</span>
+        <h2 id="warehouse-title">Склад</h2>
+      </div>
+      <button class="warehouse-close" type="button" data-warehouse-close aria-label="Закрыть склад">×</button>
+    </div>
+    <p class="warehouse-note">Урожай хранится здесь. Позже его можно будет отдавать посетителям и использовать в заказах.</p>
+    <div class="warehouse-list" id="warehouse-list"></div>
+  </div>
+</div>
+
+<section id="screen-shop" aria-label="Магазин">
+  <h2 class="shop-title">Магазин</h2>
+
+  <!-- Tab strip -->
+  <div class="shop-tabs" role="tablist" aria-label="Разделы магазина">
+    <button class="shop-tab-btn active" role="tab" aria-selected="true"  data-shop-tab="deals"  aria-controls="shop-panel-deals">🔥 Акции</button>
+    <button class="shop-tab-btn"        role="tab" aria-selected="false" data-shop-tab="seeds"  aria-controls="shop-panel-seeds" aria-label="Каталог семян">🌱 Семена</button>
+    <button class="shop-tab-btn"        role="tab" aria-selected="false" data-shop-tab="microgreens" aria-controls="shop-panel-microgreens">Микрозелень</button>
+  </div>
+
+  <!-- Tab panels -->
+  <div class="shop-tab-panel active" id="shop-panel-deals" role="tabpanel">
+    <div class="shop-empty-state">
+      <span class="shop-empty-icon">🏷️</span>
+      <p>Здесь появятся акции</p>
+    </div>
+  </div>
+
+  <div class="shop-tab-panel" id="shop-panel-seeds" role="tabpanel">
+    <div class="shop-seeds-grid">
+
+      <!-- Watermelon seeds -->
+      <div class="shop-seed-card" data-item-id="watermelon" data-plant-id="watermelon" data-price-coins="50">
+        <div class="shop-seed-icon">
+          <svg viewBox="0 0 72 72" fill="none" xmlns="http://www.w3.org/2000/svg" width="72" height="72" aria-hidden="true">
+            <!-- seed body -->
+            <ellipse cx="36" cy="38" rx="15" ry="22" fill="#1a1a1a" rx="15" ry="22"/>
+            <ellipse cx="36" cy="38" rx="15" ry="22" fill="#2a2a2a"/>
+            <!-- highlight -->
+            <ellipse cx="30" cy="28" rx="4" ry="7" fill="#4a4a4a" opacity="0.6" transform="rotate(-10 30 28)"/>
+          </svg>
+        </div>
+        <span class="shop-seed-name">Арбуз</span>
+        <span class="shop-seed-price">🪙 50 монет</span>
+        <button class="shop-buy-btn" data-action="buy">Купить</button>
+        <span class="shop-insufficient">Недостаточно средств</span>
+      </div>
+
+      <!-- Oak seeds (acorn) -->
+      <div class="shop-seed-card" data-item-id="oak" data-plant-id="oak" data-price-gems="7">
+        <div class="shop-seed-icon">
+          <svg viewBox="0 0 72 72" fill="none" xmlns="http://www.w3.org/2000/svg" width="72" height="72" aria-hidden="true">
+            <!-- cap -->
+            <ellipse cx="36" cy="26" rx="17" ry="9" fill="#7b5e3a"/>
+            <rect x="19" y="23" width="34" height="7" rx="2" fill="#6b4e2a"/>
+            <!-- stem -->
+            <rect x="34" y="17" width="4" height="8" rx="2" fill="#5a3d1e"/>
+            <!-- body -->
+            <ellipse cx="36" cy="44" rx="13" ry="18" fill="#c8843a"/>
+            <!-- highlight -->
+            <ellipse cx="30" cy="36" rx="4" ry="6" fill="#e0a060" opacity="0.5" transform="rotate(-8 30 36)"/>
+          </svg>
+        </div>
+        <span class="shop-seed-name">Дуб</span>
+        <span class="shop-seed-price">💎 7 гемов</span>
+        <button class="shop-buy-btn" data-action="buy">Купить</button>
+        <span class="shop-insufficient">Недостаточно средств</span>
+      </div>
+
+    </div>
+  </div>
+
+  <div class="shop-tab-panel" id="shop-panel-microgreens" role="tabpanel">
+    <div class="shop-seeds-grid">
+      <div class="shop-seed-card" data-item-id="microgreen_tray" data-shop-kind="microgreen-tray" data-price-coins="100">
+        <div class="shop-seed-icon">
+          <svg viewBox="0 0 72 72" fill="none" xmlns="http://www.w3.org/2000/svg" width="72" height="72" aria-hidden="true">
+            <path d="M10 31H62L58 55C57 59 54 61 50 61H22C18 61 15 59 14 55Z" fill="#c86f38"/>
+            <rect x="7" y="23" width="58" height="17" rx="7" fill="#df8250"/>
+            <rect x="13" y="27" width="46" height="8" rx="4" fill="#3e2a1c"/>
+          </svg>
+        </div>
+        <span class="shop-seed-name">Лоток для микрозелени</span>
+        <span class="shop-seed-level">Лотков: 1</span>
+        <span class="shop-seed-price">🪙 100 монет</span>
+        <button class="shop-buy-btn" data-action="buy">Купить ещё лоток</button>
+        <span class="shop-insufficient">Недостаточно средств</span>
+      </div>
+
+      <div class="shop-seed-card" data-item-id="cress_seeds" data-shop-kind="microgreen-culture" data-plant-id="cress" data-price-coins="20">
+        <div class="shop-seed-icon">
+          <svg viewBox="0 0 72 72" fill="none" xmlns="http://www.w3.org/2000/svg" width="72" height="72" aria-hidden="true">
+            <path d="M25 59Q27 42 28 27M36 59Q35 38 37 22M47 59Q45 43 46 29" stroke="#3a6b2e" stroke-width="3" stroke-linecap="round"/>
+            <ellipse cx="26" cy="25" rx="9" ry="5" transform="rotate(-16 26 25)" fill="#6eaa56"/>
+            <ellipse cx="38" cy="21" rx="9" ry="5" transform="rotate(15 38 21)" fill="#72b35a"/>
+            <ellipse cx="47" cy="28" rx="8" ry="4.5" transform="rotate(-14 47 28)" fill="#5e9a4a"/>
+          </svg>
+        </div>
+        <span class="shop-seed-name">Кресс-салат</span>
+        <span class="shop-seed-level">Уровень 1 из 10</span>
+        <span class="shop-seed-reward">8–13 монет за полив</span>
+        <span class="shop-seed-price">🪙 20 монет</span>
+        <button class="shop-buy-btn" data-action="buy">Улучшить до уровня 2</button>
+        <span class="shop-insufficient">Недостаточно средств</span>
+      </div>
+
+      <div class="shop-seed-card" data-item-id="radish_micro_seeds" data-shop-kind="microgreen-culture" data-plant-id="radish_micro" data-price-coins="20">
+        <div class="shop-seed-icon">
+          <svg viewBox="0 0 72 72" fill="none" xmlns="http://www.w3.org/2000/svg" width="72" height="72" aria-hidden="true">
+            <path d="M23 59Q25 40 27 25M36 59Q35 36 37 20M49 59Q47 42 48 27" stroke="#557a35" stroke-width="3" stroke-linecap="round"/>
+            <ellipse cx="25" cy="24" rx="9" ry="5" transform="rotate(-16 25 24)" fill="#8bb85c"/><ellipse cx="38" cy="19" rx="9" ry="5" transform="rotate(15 38 19)" fill="#91bd62"/><ellipse cx="49" cy="26" rx="8" ry="4.5" transform="rotate(-14 49 26)" fill="#78a84f"/>
+            <circle cx="27" cy="31" r="3" fill="#b45768" opacity="0.8"/>
+          </svg>
+        </div>
+        <span class="shop-seed-name">Микрозелень редиса</span>
+        <span class="shop-seed-level">Не открыто</span>
+        <span class="shop-seed-reward">10–15 монет за полив</span>
+        <span class="shop-seed-price">🪙 20 монет</span>
+        <button class="shop-buy-btn" data-action="buy">Купить культуру</button>
+        <span class="shop-insufficient">Недостаточно средств</span>
+      </div>
+
+      <div class="shop-seed-card" data-item-id="broccoli_micro_seeds" data-shop-kind="microgreen-culture" data-plant-id="broccoli_micro" data-price-coins="20">
+        <div class="shop-seed-icon">
+          <svg viewBox="0 0 72 72" fill="none" xmlns="http://www.w3.org/2000/svg" width="72" height="72" aria-hidden="true">
+            <path d="M23 59Q24 39 26 27M36 59Q35 35 37 22M49 59Q47 41 48 28" stroke="#315f3c" stroke-width="3" stroke-linecap="round"/>
+            <circle cx="24" cy="25" r="7" fill="#548d58"/><circle cx="36" cy="20" r="8" fill="#67a06a"/><circle cx="49" cy="26" r="7" fill="#477f50"/><circle cx="31" cy="28" r="7" fill="#5b965f"/>
+          </svg>
+        </div>
+        <span class="shop-seed-name">Микрозелень брокколи</span>
+        <span class="shop-seed-level">Не открыто</span>
+        <span class="shop-seed-reward">12–17 монет за полив</span>
+        <span class="shop-seed-price">🪙 20 монет</span>
+        <button class="shop-buy-btn" data-action="buy">Купить культуру</button>
+        <span class="shop-insufficient">Недостаточно средств</span>
+      </div>
+
+      <div class="shop-seed-card shop-seed-card--premium" data-item-id="shiso_micro_seeds" data-shop-kind="microgreen-culture" data-plant-id="shiso_micro" data-price-gems="50">
+        <div class="shop-seed-icon">
+          <svg viewBox="0 0 72 72" fill="none" xmlns="http://www.w3.org/2000/svg" width="72" height="72" aria-hidden="true">
+            <path d="M22 61Q24 43 25 31M38 61Q36 38 39 25M54 61Q52 43 53 32" stroke="#71364f" stroke-width="3" stroke-linecap="round"/>
+            <path d="M25 32L15 29L19 24L14 20L22 18L20 12L27 16L32 10L35 18L43 17L38 24L44 29L35 30Z" fill="#793f67"/><path d="M39 26L29 23L33 18L28 14L36 12L34 6L41 10L46 4L49 12L57 11L52 18L58 23L49 24Z" fill="#4e7c52"/><path d="M53 33L43 30L47 25L42 21L50 19L48 13L55 17L60 11L63 19L70 18L66 25L71 30L63 31Z" fill="#793f67"/>
+          </svg>
+        </div>
+        <span class="shop-seed-name">Шисо Бриттон</span>
+        <span class="shop-seed-level">Не открыто</span>
+        <span class="shop-seed-reward">15–23 монеты за полив</span>
+        <span class="shop-seed-price">💎 50 гемов</span>
+        <button class="shop-buy-btn" data-action="buy">Купить культуру</button>
+        <span class="shop-insufficient">Недостаточно средств</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="shop-back-row">
+    <button class="btn btn-ghost" id="btn-shop-back">← Назад</button>
+  </div>
+</section>
+
+  <script src="app.js?v=layout-fix-7" defer></script>
+</body>
+</html>

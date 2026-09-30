@@ -1,0 +1,11 @@
+# Local QA and browser files
+qa-*.png
+.edge-*-profile/
+.edge-*-check/
+
+# OS and editor files
+.DS_Store
+Thumbs.db
+desktop.ini
+*.tmp
+
